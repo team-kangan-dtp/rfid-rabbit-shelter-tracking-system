@@ -1,14 +1,17 @@
 <script>
   import { supabase } from "$lib/supabaseClient";
   import { onMount, onDestroy } from "svelte";
+  import { page } from "$app/state";
 
   let logEvents = [];
-  let connectionStatus = "Disconnected";
+  let connectionStatus = $state("Disconnected");
   let channel;
-  let currentUserId = null;
+  let currentUserId = $derived(page.data.user?.id || null);
+  let currentUserEmail = $derived(page.data.user?.email || null);
 
   onMount(() => {
     console.log("Setting up realtime channel...");
+    console.log("Current user ID:", currentUserId);
 
     channel = supabase
       .channel("log-test")
@@ -18,7 +21,7 @@
           event: "INSERT",
           schema: "public",
           table: "rfid_scan_log",
-          filter: `rfid = ${currentUserId}`,
+          filter: `user_id=eq.${currentUserId}`,
         },
         (payload) => {
           console.log("New log entry:", payload);
@@ -48,6 +51,8 @@
 
 <h1>Realtime Log Test</h1>
 <p>Status: {connectionStatus}</p>
+<p>Current user email: {currentUserEmail}</p>
+<p>Current user ID: {currentUserId}</p>
 
 {#if logEvents.length > 0}
   <h2>Recent Log Events:</h2>

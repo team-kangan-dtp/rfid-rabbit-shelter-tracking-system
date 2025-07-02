@@ -10,6 +10,7 @@
     { title: "Home", url: "/", icon: HouseIcon },
     { title: "Dashboard", url: "/dashboard", icon: InboxIcon },
     { title: "Realtime Testing", url: "/realtime_test", icon: SettingsIcon },
+    { title: "Login", url: "/auth", icon: SettingsIcon },
   ];
 </script>
 
