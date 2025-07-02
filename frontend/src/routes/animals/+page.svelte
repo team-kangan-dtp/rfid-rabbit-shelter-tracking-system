@@ -176,122 +176,156 @@
 </script>
 
 <!-- Animals heading -->
-<div class="p-3 space-y-1">
-  <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-    Animals
-  </h1>
-  <p class="text-xl text-muted-foreground">
-    Manage your animal shelter records
-  </p>
-</div>
-
-<!-- Search and Filter Section -->
-<div class="p-3 border-b bg-muted/50">
-  <div class="space-y-4">
-    <!-- Search Bar -->
-    <div class="space-y-2">
-      <Label for="search">Search Animals</Label>
-      <Input
-        id="search"
-        type="text"
-        bind:value={searchTerm}
-        placeholder="Search by name, species, or breed..."
-        class="w-full"
-      />
+<div class="p-6 pb-0">
+  <div class="flex items-center justify-between">
+    <div class="space-y-1">
+      <h1
+        class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl"
+      >
+        Animals
+      </h1>
+      <p class="text-xl text-muted-foreground">
+        Manage your animal shelter records
+      </p>
     </div>
-
-    <!-- Filters Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-      <!-- Species Filter -->
-      <div class="space-y-2">
-        <Label for="species-filter">Species</Label>
-        <Select.Root type="single" bind:value={filterSpecies}>
-          <Select.Trigger class="w-full">
-            {filterSpecies || "All Species"}
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Item value="">All Species</Select.Item>
-            {#each uniqueSpecies as species}
-              <Select.Item value={species}>{species}</Select.Item>
-            {/each}
-          </Select.Content>
-        </Select.Root>
-      </div>
-
-      <!-- Adoption Status Filter -->
-      <div class="space-y-2">
-        <Label for="adoption-filter">Adoption Status</Label>
-        <Select.Root type="single" bind:value={filterAdoptionStatus}>
-          <Select.Trigger class="w-full">
-            {filterAdoptionStatus || "All Statuses"}
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Item value="">All Statuses</Select.Item>
-            {#each uniqueAdoptionStatuses as status}
-              <Select.Item value={status}>{status}</Select.Item>
-            {/each}
-          </Select.Content>
-        </Select.Root>
-      </div>
-
-      <!-- Neutered Filter -->
-      <div class="space-y-2">
-        <Label for="neutered-filter">Neutered</Label>
-        <Select.Root type="single" bind:value={filterNeutered}>
-          <Select.Trigger class="w-full">
-            {filterNeutered || "All"}
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Item value="">All</Select.Item>
-            <Select.Item value="yes">Yes</Select.Item>
-            <Select.Item value="no">No</Select.Item>
-          </Select.Content>
-        </Select.Root>
-      </div>
-
-      <!-- Date From -->
-      <div class="space-y-2">
-        <Label for="date-from">Arrival Date From</Label>
-        <Input
-          id="date-from"
-          type="date"
-          bind:value={filterDateFrom}
-          class="w-full"
-        />
-      </div>
-
-      <!-- Date To -->
-      <div class="space-y-2">
-        <Label for="date-to">Arrival Date To</Label>
-        <Input
-          id="date-to"
-          type="date"
-          bind:value={filterDateTo}
-          class="w-full"
-        />
-      </div>
-    </div>
-
-    <!-- Filter Controls -->
-    <div class="flex justify-between items-center">
-      <div class="text-sm text-muted-foreground">
-        Showing {filteredAnimals.length} of {data.animals.length} animals
-      </div>
-      <Button variant="outline" size="sm" on:click={clearFilters}>
-        Clear Filters
-      </Button>
-    </div>
+    <!-- Add Animal Button moved to top -->
+    <Button onclick={handleCreate}>Add New Animal</Button>
   </div>
 </div>
 
+<!-- Search and Filter Section -->
+<div class="p-6 space-y-6">
+  <!-- Search Bar -->
+  <div class="space-y-2">
+    <Label for="search">Search Animals</Label>
+    <Input
+      id="search"
+      type="text"
+      bind:value={searchTerm}
+      placeholder="Search by name, species, or breed..."
+      class="w-full"
+    />
+  </div>
+
+  <!-- Filters Card -->
+  <Card.Root>
+    <Card.Header>
+      <Card.Title>Filters</Card.Title>
+    </Card.Header>
+    <Card.Content>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- Species Filter -->
+        <div class="space-y-2">
+          <Label for="species-filter">Species</Label>
+          <Select.Root type="single" bind:value={filterSpecies}>
+            <Select.Trigger class="w-full">
+              {filterSpecies || "All Species"}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="">All Species</Select.Item>
+              {#each uniqueSpecies as species}
+                <Select.Item value={species}>{species}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+        </div>
+
+        <!-- Adoption Status Filter -->
+        <div class="space-y-2">
+          <Label for="adoption-filter">Adoption Status</Label>
+          <Select.Root type="single" bind:value={filterAdoptionStatus}>
+            <Select.Trigger class="w-full">
+              {filterAdoptionStatus || "All Statuses"}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="">All Statuses</Select.Item>
+              {#each uniqueAdoptionStatuses as status}
+                <Select.Item value={status}>{status}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+        </div>
+
+        <!-- Neutered Filter -->
+        <div class="space-y-2">
+          <Label for="neutered-filter">Neutered</Label>
+          <Select.Root type="single" bind:value={filterNeutered}>
+            <Select.Trigger class="w-full">
+              {filterNeutered || "All"}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="">All</Select.Item>
+              <Select.Item value="yes">Yes</Select.Item>
+              <Select.Item value="no">No</Select.Item>
+            </Select.Content>
+          </Select.Root>
+        </div>
+
+        <!-- Date From -->
+        <div class="space-y-2">
+          <Label for="date-from">Arrival Date From</Label>
+          <Input
+            id="date-from"
+            type="date"
+            bind:value={filterDateFrom}
+            class="w-full"
+          />
+        </div>
+
+        <!-- Date To -->
+        <div class="space-y-2">
+          <Label for="date-to">Arrival Date To</Label>
+          <Input
+            id="date-to"
+            type="date"
+            bind:value={filterDateTo}
+            class="w-full"
+          />
+        </div>
+      </div>
+
+      <!-- Filter Controls -->
+      <div class="flex justify-between items-center mt-4">
+        <div class="text-sm text-muted-foreground">
+          Showing {filteredAnimals.length} of {data.animals.length} animals
+        </div>
+        <Button variant="outline" size="sm" onclick={clearFilters}>
+          Clear Filters
+        </Button>
+      </div>
+    </Card.Content>
+  </Card.Root>
+</div>
+
 <!-- Animals List -->
-<div class="p-3">
+<div class="px-6 pb-6">
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {#each filteredAnimals as animal (animal.animal_id)}
       <Card.Root>
         <Card.Content class="p-4">
-          <div class="space-y-2">
-            <h3 class="font-semibold text-lg">{animal.name}</h3>
+          <div class="space-y-3">
+            <!-- Header with name and buttons -->
+            <div class="flex items-start justify-between">
+              <h3 class="font-semibold text-lg">{animal.name}</h3>
+              <div class="flex gap-2 ml-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onclick={() => handleEdit(animal)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onclick={() => handleDelete(animal)}
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+
+            <!-- Animal details -->
             <div class="text-sm text-muted-foreground space-y-1">
               <p><span class="font-medium">Species:</span> {animal.species}</p>
               {#if animal.breed}
@@ -322,22 +356,6 @@
                 </p>
               {/if}
             </div>
-            <div class="flex gap-2 pt-2">
-              <Button
-                variant="default"
-                size="sm"
-                on:click={() => handleEdit(animal)}
-              >
-                Edit
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                on:click={() => handleDelete(animal)}
-              >
-                Delete
-              </Button>
-            </div>
           </div>
         </Card.Content>
       </Card.Root>
@@ -349,11 +367,6 @@
         </p>
       </div>
     {/each}
-  </div>
-
-  <!-- Add Animal Button -->
-  <div class="mt-6">
-    <Button on:click={handleCreate}>Add New Animal</Button>
   </div>
 </div>
 
@@ -385,9 +398,9 @@
       <!-- Species -->
       <div class="space-y-2">
         <Label for="create-species">Species *</Label>
-        <Select.Root bind:value={newAnimal.species}>
+        <Select.Root type="single" bind:value={newAnimal.species}>
           <Select.Trigger>
-            <Select.Value />
+            {newAnimal.species}
           </Select.Trigger>
           <Select.Content>
             <Select.Item value="Rabbit">Rabbit</Select.Item>
@@ -448,9 +461,9 @@
       <!-- Adoption Status -->
       <div class="space-y-2">
         <Label for="create-adoption-status">Adoption Status *</Label>
-        <Select.Root bind:value={newAnimal.adoption_status}>
+        <Select.Root type="single" bind:value={newAnimal.adoption_status}>
           <Select.Trigger>
-            <Select.Value />
+            {newAnimal.adoption_status}
           </Select.Trigger>
           <Select.Content>
             <Select.Item value="Available">Available</Select.Item>
@@ -486,7 +499,7 @@
           type="button"
           variant="outline"
           class="flex-1"
-          on:click={handleCancel}
+          onclick={handleCancel}
         >
           Cancel
         </Button>
@@ -527,9 +540,9 @@
         <!-- Species -->
         <div class="space-y-2">
           <Label for="edit-species">Species *</Label>
-          <Select.Root bind:value={editingAnimal.species}>
+          <Select.Root type="single" bind:value={editingAnimal.species}>
             <Select.Trigger>
-              <Select.Value />
+              {editingAnimal.species}
             </Select.Trigger>
             <Select.Content>
               <Select.Item value="Rabbit">Rabbit</Select.Item>
@@ -594,9 +607,9 @@
         <!-- Adoption Status -->
         <div class="space-y-2">
           <Label for="edit-adoption-status">Adoption Status *</Label>
-          <Select.Root bind:value={editingAnimal.adoption_status}>
+          <Select.Root type="single" bind:value={editingAnimal.adoption_status}>
             <Select.Trigger>
-              <Select.Value />
+              {editingAnimal.adoption_status}
             </Select.Trigger>
             <Select.Content>
               <Select.Item value="Available">Available</Select.Item>
@@ -632,7 +645,7 @@
             type="button"
             variant="outline"
             class="flex-1"
-            on:click={handleCancel}
+            onclick={handleCancel}
           >
             Cancel
           </Button>
