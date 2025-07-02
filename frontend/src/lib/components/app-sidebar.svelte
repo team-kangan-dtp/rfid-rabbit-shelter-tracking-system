@@ -1,16 +1,16 @@
 <script lang="ts">
-  import CalendarIcon from "@lucide/svelte/icons/calendar";
+  import User from "@lucide/svelte/icons/user";
   import HouseIcon from "@lucide/svelte/icons/house";
   import InboxIcon from "@lucide/svelte/icons/inbox";
-  import SearchIcon from "@lucide/svelte/icons/search";
+  import scanText from "@lucide/svelte/icons/scan-text";
   import SettingsIcon from "@lucide/svelte/icons/settings";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
 
   const items = [
+    { title: "Auth", url: "/auth", icon: User },
     { title: "Home", url: "/", icon: HouseIcon },
-    { title: "Dashboard", url: "/dashboard", icon: InboxIcon },
-    { title: "Realtime Testing", url: "/realtime_test", icon: SettingsIcon },
-    { title: "Login", url: "/auth", icon: SettingsIcon },
+    { title: "Animals", url: "/animals", icon: InboxIcon },
+    { title: "Realtime Testing", url: "/realtime_test", icon: scanText },
   ];
 </script>
 

@@ -26,16 +26,4 @@
   };
 </script>
 
-<h1>Private page for user: {user?.email}</h1>
-<h2>Notes</h2>
-<ul>
-  {#each notes as note}
-    <li>{note.note}</li>
-  {/each}
-</ul>
-<form onsubmit={handleSubmit}>
-  <label>
-    Add a note
-    <input name="note" type="text" />
-  </label>
-</form>
+<h1>Current User: {user?.email}</h1>
