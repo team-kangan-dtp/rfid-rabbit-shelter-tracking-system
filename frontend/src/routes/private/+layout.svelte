@@ -1,5 +1,7 @@
 <script>
   import { goto } from "$app/navigation";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import { Card } from "$lib/components/ui/card/index.js";
 
   let { data, children } = $props();
   let { supabase } = $derived(data);
@@ -15,10 +17,10 @@
 </script>
 
 <header>
-  <nav>
+  <Button>
     <a href="/">Home</a>
-  </nav>
-  <button onclick={logout}>Logout</button>
+  </Button>
+  <Button class="cursor-pointer" onclick={logout}>Logout</Button>
 </header>
 <main>
   {@render children()}
