@@ -40,11 +40,10 @@ export const actions: Actions = {
       }
 
       const animalData = {
-        animal_id: randomUUID(),
         name: data.get("name") as string,
         species: data.get("species") as string,
         breed: (data.get("breed") as string) || null,
-        dob: (data.get("dob") as string) || null,
+        date_of_birth: (data.get("date_of_birth") as string) || null,
         fur_colour: (data.get("fur_colour") as string) || null,
         weight_kg: data.get("weight_kg")
           ? parseFloat(data.get("weight_kg") as string)
@@ -53,8 +52,11 @@ export const actions: Actions = {
           (data.get("arrival_date") as string) ||
           new Date().toISOString().split("T")[0],
         neutered: data.get("neutered") === "on",
-        adoption_status: (data.get("adoption_status") as string) || "No",
+        adoption_status: (data.get("adoption_status") as string) || "Available",
         bonded_with: (data.get("bonded_with") as string) || null,
+        rfid_tag: (data.get("rfid_tag") as string) || null,
+        special_needs: (data.get("special_needs") as string) || null,
+        description: (data.get("description") as string) || null,
       };
 
       console.log("💾 Animal data to insert:", animalData);
@@ -81,13 +83,13 @@ export const actions: Actions = {
   update: async ({ request }) => {
     console.log("🔄 UPDATE ACTION CALLED");
     const data = await request.formData();
-    const id = data.get("animal_id") as string;
+    const id = data.get("id") as string;
 
     const animalData = {
       name: data.get("name") as string,
       species: data.get("species") as string,
       breed: (data.get("breed") as string) || null,
-      dob: (data.get("dob") as string) || null,
+      date_of_birth: (data.get("date_of_birth") as string) || null,
       fur_colour: (data.get("fur_colour") as string) || null,
       weight_kg: data.get("weight_kg")
         ? parseFloat(data.get("weight_kg") as string)
@@ -96,12 +98,15 @@ export const actions: Actions = {
       neutered: data.get("neutered") === "on",
       adoption_status: data.get("adoption_status") as string,
       bonded_with: (data.get("bonded_with") as string) || null,
+      rfid_tag: (data.get("rfid_tag") as string) || null,
+      special_needs: (data.get("special_needs") as string) || null,
+      description: (data.get("description") as string) || null,
     };
 
     const { error } = await supabase
       .from("animal")
       .update(animalData)
-      .eq("animal_id", id);
+      .eq("id", id);
 
     if (error) {
       console.error("Update error:", error);
@@ -115,12 +120,9 @@ export const actions: Actions = {
   delete: async ({ request }) => {
     console.log("🗑️ DELETE ACTION CALLED");
     const data = await request.formData();
-    const id = data.get("animal_id") as string;
+    const id = data.get("id") as string;
 
-    const { error } = await supabase
-      .from("animal")
-      .delete()
-      .eq("animal_id", id);
+    const { error } = await supabase.from("animal").delete().eq("id", id);
 
     if (error) {
       console.error("Delete error:", error);
