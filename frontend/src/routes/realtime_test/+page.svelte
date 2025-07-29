@@ -3,7 +3,7 @@
   import { onMount, onDestroy } from "svelte";
   import { page } from "$app/state";
 
-  let logEvents = [];
+  let logEvents = $state([]);
   let connectionStatus = $state("Disconnected");
   let channel;
   let currentUserId = $derived(page.data.user?.id || null);
@@ -20,8 +20,8 @@
         {
           event: "INSERT",
           schema: "public",
-          table: "rfid_scan_log",
-          filter: `user_id=eq.${currentUserId}`,
+          table: "rfid_log",
+          // filter: `user_id=eq.${currentUserId}`,
         },
         (payload) => {
           console.log("New log entry:", payload);

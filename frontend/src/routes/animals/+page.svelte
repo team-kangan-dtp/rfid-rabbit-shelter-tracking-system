@@ -12,17 +12,24 @@
   // Get the data from the server
   export let data: PageData;
 
-  // Define the Animal type
+  // Define the Animal type with updated schema
   type Animal = {
-    animal_id: string;
+    id: string;
     name: string;
     species: string;
     breed?: string;
-    dob?: string;
+    date_of_birth?: string;
+    fur_colour?: string;
+    weight_kg?: number;
     arrival_date: string;
     neutered: boolean;
     adoption_status: string;
     bonded_with?: string;
+    rfid_tag?: string;
+    special_needs?: string;
+    description?: string;
+    created_at?: string;
+    updated_at?: string;
   };
 
   // State for editing and creating
@@ -46,11 +53,16 @@
     name: "",
     species: "Rabbit",
     breed: "",
-    dob: "",
+    date_of_birth: "",
+    fur_colour: "",
+    weight_kg: "",
     arrival_date: new Date().toISOString().split("T")[0], // Today's date
     neutered: false,
     adoption_status: "Available",
     bonded_with: "",
+    rfid_tag: "",
+    special_needs: "",
+    description: "",
   };
 
   // Check if panel should be visible
@@ -139,8 +151,8 @@
 
       const idInput = document.createElement("input");
       idInput.type = "hidden";
-      idInput.name = "animal_id";
-      idInput.value = animal.animal_id;
+      idInput.name = "id";
+      idInput.value = animal.id;
 
       form.appendChild(idInput);
       document.body.appendChild(form);
@@ -156,11 +168,16 @@
       name: "",
       species: "Rabbit",
       breed: "",
-      dob: "",
+      date_of_birth: "",
+      fur_colour: "",
+      weight_kg: "",
       arrival_date: new Date().toISOString().split("T")[0],
       neutered: false,
       adoption_status: "Available",
       bonded_with: "",
+      rfid_tag: "",
+      special_needs: "",
+      description: "",
     };
   }
 
@@ -300,7 +317,7 @@
 <!-- Animals List -->
 <div class="px-6 pb-6">
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {#each filteredAnimals as animal (animal.animal_id)}
+    {#each filteredAnimals as animal (animal.id)}
       <Card.Root>
         <Card.Content class="p-4">
           <div class="space-y-3">
@@ -331,10 +348,22 @@
               {#if animal.breed}
                 <p><span class="font-medium">Breed:</span> {animal.breed}</p>
               {/if}
-              {#if animal.dob}
+              {#if animal.date_of_birth}
                 <p>
                   <span class="font-medium">Date of Birth:</span>
-                  {animal.dob}
+                  {animal.date_of_birth}
+                </p>
+              {/if}
+              {#if animal.fur_colour}
+                <p>
+                  <span class="font-medium">Fur Colour:</span>
+                  {animal.fur_colour}
+                </p>
+              {/if}
+              {#if animal.weight_kg}
+                <p>
+                  <span class="font-medium">Weight:</span>
+                  {animal.weight_kg} kg
                 </p>
               {/if}
               <p>
@@ -349,6 +378,24 @@
                 <span class="font-medium">Adoption Status:</span>
                 {animal.adoption_status}
               </p>
+              {#if animal.rfid_tag}
+                <p>
+                  <span class="font-medium">RFID Tag:</span>
+                  {animal.rfid_tag}
+                </p>
+              {/if}
+              {#if animal.special_needs}
+                <p>
+                  <span class="font-medium">Special Needs:</span>
+                  {animal.special_needs}
+                </p>
+              {/if}
+              {#if animal.description}
+                <p>
+                  <span class="font-medium">Description:</span>
+                  {animal.description}
+                </p>
+              {/if}
               {#if animal.bonded_with}
                 <p>
                   <span class="font-medium">Bonded With:</span>
@@ -372,7 +419,7 @@
 
 <!-- Create New Animal Sheet -->
 <Sheet.Root bind:open={showCreateForm}>
-  <Sheet.Content class="sm:max-w-md">
+  <Sheet.Content class="sm:max-w-lg overflow-y-auto">
     <Sheet.Header>
       <Sheet.Title>Add New Animal</Sheet.Title>
     </Sheet.Header>
@@ -427,12 +474,35 @@
 
       <!-- Date of Birth -->
       <div class="space-y-2">
-        <Label for="create-dob">Date of Birth</Label>
+        <Label for="create-date-of-birth">Date of Birth</Label>
         <Input
-          id="create-dob"
+          id="create-date-of-birth"
           type="date"
-          name="dob"
-          bind:value={newAnimal.dob}
+          name="date_of_birth"
+          bind:value={newAnimal.date_of_birth}
+        />
+      </div>
+
+      <!-- Fur Colour -->
+      <div class="space-y-2">
+        <Label for="create-fur-colour">Fur Colour</Label>
+        <Input
+          id="create-fur-colour"
+          type="text"
+          name="fur_colour"
+          bind:value={newAnimal.fur_colour}
+        />
+      </div>
+
+      <!-- Weight -->
+      <div class="space-y-2">
+        <Label for="create-weight">Weight (kg)</Label>
+        <Input
+          id="create-weight"
+          type="number"
+          step="0.1"
+          name="weight_kg"
+          bind:value={newAnimal.weight_kg}
         />
       </div>
 
@@ -467,16 +537,28 @@
           </Select.Trigger>
           <Select.Content>
             <Select.Item value="Available">Available</Select.Item>
-            <Select.Item value="Adopted">Adopted</Select.Item>
             <Select.Item value="Pending">Pending</Select.Item>
-            <Select.Item value="Not Available">Not Available</Select.Item>
+            <Select.Item value="Adopted">Adopted</Select.Item>
+            <Select.Item value="Hold">Hold</Select.Item>
             <Select.Item value="Medical Hold">Medical Hold</Select.Item>
+            <Select.Item value="Not Available">Not Available</Select.Item>
           </Select.Content>
         </Select.Root>
         <input
           type="hidden"
           name="adoption_status"
           bind:value={newAnimal.adoption_status}
+        />
+      </div>
+
+      <!-- RFID Tag -->
+      <div class="space-y-2">
+        <Label for="create-rfid-tag">RFID Tag</Label>
+        <Input
+          id="create-rfid-tag"
+          type="text"
+          name="rfid_tag"
+          bind:value={newAnimal.rfid_tag}
         />
       </div>
 
@@ -490,6 +572,30 @@
           bind:value={newAnimal.bonded_with}
           placeholder="Enter animal ID if bonded"
         />
+      </div>
+
+      <!-- Special Needs -->
+      <div class="space-y-2">
+        <Label for="create-special-needs">Special Needs</Label>
+        <textarea
+          id="create-special-needs"
+          name="special_needs"
+          bind:value={newAnimal.special_needs}
+          placeholder="Any special care requirements..."
+          class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        ></textarea>
+      </div>
+
+      <!-- Description -->
+      <div class="space-y-2">
+        <Label for="create-description">Description</Label>
+        <textarea
+          id="create-description"
+          name="description"
+          bind:value={newAnimal.description}
+          placeholder="General description of the animal..."
+          class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        ></textarea>
       </div>
 
       <!-- Form Actions -->
@@ -510,7 +616,7 @@
 
 <!-- Edit Animal Sheet -->
 <Sheet.Root bind:open={showEditForm}>
-  <Sheet.Content class="sm:max-w-md">
+  <Sheet.Content class="sm:max-w-lg overflow-y-auto">
     <Sheet.Header>
       <Sheet.Title>Edit Animal: {editingAnimal?.name}</Sheet.Title>
     </Sheet.Header>
@@ -523,7 +629,7 @@
         class="space-y-4"
       >
         <!-- Hidden field for animal ID -->
-        <input type="hidden" name="animal_id" value={editingAnimal.animal_id} />
+        <input type="hidden" name="id" value={editingAnimal.id} />
 
         <!-- Name -->
         <div class="space-y-2">
@@ -573,12 +679,35 @@
 
         <!-- Date of Birth -->
         <div class="space-y-2">
-          <Label for="edit-dob">Date of Birth</Label>
+          <Label for="edit-date-of-birth">Date of Birth</Label>
           <Input
-            id="edit-dob"
+            id="edit-date-of-birth"
             type="date"
-            name="dob"
-            bind:value={editingAnimal.dob}
+            name="date_of_birth"
+            bind:value={editingAnimal.date_of_birth}
+          />
+        </div>
+
+        <!-- Fur Colour -->
+        <div class="space-y-2">
+          <Label for="edit-fur-colour">Fur Colour</Label>
+          <Input
+            id="edit-fur-colour"
+            type="text"
+            name="fur_colour"
+            bind:value={editingAnimal.fur_colour}
+          />
+        </div>
+
+        <!-- Weight -->
+        <div class="space-y-2">
+          <Label for="edit-weight">Weight (kg)</Label>
+          <Input
+            id="edit-weight"
+            type="number"
+            step="0.1"
+            name="weight_kg"
+            bind:value={editingAnimal.weight_kg}
           />
         </div>
 
@@ -613,16 +742,28 @@
             </Select.Trigger>
             <Select.Content>
               <Select.Item value="Available">Available</Select.Item>
-              <Select.Item value="Adopted">Adopted</Select.Item>
               <Select.Item value="Pending">Pending</Select.Item>
-              <Select.Item value="Not Available">Not Available</Select.Item>
+              <Select.Item value="Adopted">Adopted</Select.Item>
+              <Select.Item value="Hold">Hold</Select.Item>
               <Select.Item value="Medical Hold">Medical Hold</Select.Item>
+              <Select.Item value="Not Available">Not Available</Select.Item>
             </Select.Content>
           </Select.Root>
           <input
             type="hidden"
             name="adoption_status"
             bind:value={editingAnimal.adoption_status}
+          />
+        </div>
+
+        <!-- RFID Tag -->
+        <div class="space-y-2">
+          <Label for="edit-rfid-tag">RFID Tag</Label>
+          <Input
+            id="edit-rfid-tag"
+            type="text"
+            name="rfid_tag"
+            bind:value={editingAnimal.rfid_tag}
           />
         </div>
 
@@ -636,6 +777,30 @@
             bind:value={editingAnimal.bonded_with}
             placeholder="Enter animal ID if bonded"
           />
+        </div>
+
+        <!-- Special Needs -->
+        <div class="space-y-2">
+          <Label for="edit-special-needs">Special Needs</Label>
+          <textarea
+            id="edit-special-needs"
+            name="special_needs"
+            bind:value={editingAnimal.special_needs}
+            placeholder="Any special care requirements..."
+            class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          ></textarea>
+        </div>
+
+        <!-- Description -->
+        <div class="space-y-2">
+          <Label for="edit-description">Description</Label>
+          <textarea
+            id="edit-description"
+            name="description"
+            bind:value={editingAnimal.description}
+            placeholder="General description of the animal..."
+            class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          ></textarea>
         </div>
 
         <!-- Form Actions -->
