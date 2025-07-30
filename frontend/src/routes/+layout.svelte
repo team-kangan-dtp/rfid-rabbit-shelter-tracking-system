@@ -4,6 +4,7 @@
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import AppSidebar from "$lib/components/app-sidebar.svelte";
   import "../app.css";
+  import { ModeWatcher } from "mode-watcher";
 
   let { data, children } = $props();
   let { session, supabase } = $derived(data);
@@ -16,6 +17,8 @@
     return () => data.subscription.unsubscribe();
   });
 </script>
+
+<ModeWatcher />
 
 <Sidebar.Provider>
   <AppSidebar />
