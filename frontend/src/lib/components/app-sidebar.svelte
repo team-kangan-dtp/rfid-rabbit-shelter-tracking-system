@@ -39,7 +39,7 @@
     { title: "Realtime Testing", url: "/realtime_test", icon: scanText },
   ];
 
-  const footerItems = [{ title: "User Profile", url: " /private" }];
+  const footerItems = [{ title: "User Profile", url: "/private" }];
 
   async function handleSignOut() {
     try {
