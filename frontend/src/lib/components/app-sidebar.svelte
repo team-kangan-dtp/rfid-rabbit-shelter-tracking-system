@@ -155,10 +155,10 @@
       <Sidebar.MenuItem>
         <Sidebar.MenuButton
           class="border border-sidebar-primary/20 cursor-pointer"
+          onclick={handleSignOut}
         >
           <LogOut />
           <span>Sign out</span>
-        </Sidebar.MenuButton>
       </Sidebar.MenuItem>
 
       <!-- User Info Display at Bottom -->
