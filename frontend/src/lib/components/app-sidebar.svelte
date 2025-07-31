@@ -27,7 +27,7 @@
   console.log(currentUserEmail);
 
   const navItems = [
-    { title: "Dashboad", url: "/", icon: HouseIcon },
+    { title: "Dashboard", url: "/", icon: HouseIcon },
     { title: "Animals", url: "/animals", icon: Dog },
     { title: "Health Checks", url: "/health_checks", icon: HeartPulse },
     { title: "Adoptions", url: "/adoptions", icon: FileHeart },
