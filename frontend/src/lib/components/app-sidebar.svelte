@@ -159,6 +159,7 @@
         >
           <LogOut />
           <span>Sign out</span>
+        </Sidebar.MenuButton>
       </Sidebar.MenuItem>
 
       <!-- User Info Display at Bottom -->
