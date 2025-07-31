@@ -39,6 +39,8 @@
     { title: "Realtime Testing", url: "/realtime_test", icon: scanText },
   ];
 
+  const footerItems = [{ title: "User Profile", url: " /private" }];
+
   async function handleSignOut() {
     try {
       await supabase.auth.signOut();
