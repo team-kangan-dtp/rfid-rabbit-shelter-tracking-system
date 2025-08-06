@@ -85,3 +85,10 @@ export interface Shift {
   createdAt?: Date | null;
   updatedAt?: Date | null;
 }
+
+export interface RfidLog {
+  id: string;
+  scanTime: Date | null;
+  userId?: string | null;
+  animalId?: string | null;
+}

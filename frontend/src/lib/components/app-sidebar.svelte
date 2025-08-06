@@ -29,9 +29,10 @@
   const navItems = [
     { title: "Dashboard", url: "/", icon: HouseIcon },
     { title: "Animals", url: "/animals", icon: Dog },
-    { title: "Health Checks", url: "/health_checks", icon: HeartPulse },
-    { title: "Adoptions", url: "/adoptions", icon: FileHeart },
-    { title: "Roster", url: "/roster", icon: Calendar },
+    { title: "Scan logs", url: "/scan-logs", icon: scanText },
+    // { title: "Health Checks", url: "/health_checks", icon: HeartPulse },
+    // { title: "Adoptions", url: "/adoptions", icon: FileHeart },
+    // { title: "Roster", url: "/roster", icon: Calendar },
   ];
 
   const devPlaygroundItems = [
@@ -142,14 +143,14 @@
       </Sidebar.MenuItem>
 
       <!-- Admin Settings -->
-      <Sidebar.MenuItem>
+      <!-- <Sidebar.MenuItem>
         <Sidebar.MenuButton
           class="border border-sidebar-primary/20 cursor-pointer"
         >
           <SettingsIcon />
           <span>Admin Settings</span>
         </Sidebar.MenuButton>
-      </Sidebar.MenuItem>
+      </Sidebar.MenuItem> -->
 
       <!-- Sign out -->
       <Sidebar.MenuItem>
