@@ -92,3 +92,18 @@ export interface RfidLog {
   userId?: string | null;
   animalId?: string | null;
 }
+
+export interface user {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: number;
+  dob: string;
+  address: string;
+  city: string;
+  state: string;
+  postcode: string;
+  volunteerStartDate: string;
+  volunteerNotes: string;
+}

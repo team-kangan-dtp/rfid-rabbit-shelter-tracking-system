@@ -1,10 +1,7 @@
 <script lang="ts">
   import User from "@lucide/svelte/icons/user";
-  import HouseIcon from "@lucide/svelte/icons/house";
   import InboxIcon from "@lucide/svelte/icons/inbox";
-  import scanText from "@lucide/svelte/icons/scan-text";
   import SettingsIcon from "@lucide/svelte/icons/settings";
-  import FileHeart from "@lucide/svelte/icons/file-heart";
   import LogOut from "@lucide/svelte/icons/log-out";
   import SunMoon from "@lucide/svelte/icons/sun-moon";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
@@ -14,33 +11,17 @@
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import ChevronLeft from "@lucide/svelte/icons/chevron-left";
   import Rabbit from "@lucide/svelte/icons/rabbit";
-  import Dog from "@lucide/svelte/icons/dog";
-  import HeartPulse from "@lucide/svelte/icons/heart-pulse";
-  import Calendar from "@lucide/svelte/icons/calendar";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
   import { supabase } from "$lib/supabaseClient";
   import { toggleMode } from "mode-watcher";
+  import { navItems, devPlaygroundItems } from "$lib/config/navigation.js";
 
   let currentUserEmail = $derived($page.data?.user?.email || null);
-  // svelte-ignore state_referenced_locally
-  console.log(currentUserEmail);
-
-  const navItems = [
-    { title: "Dashboard", url: "/", icon: HouseIcon },
-    { title: "Animals", url: "/animals", icon: Dog },
-    { title: "Scan logs", url: "/scan-logs", icon: scanText },
-    // { title: "Health Checks", url: "/health_checks", icon: HeartPulse },
-    // { title: "Adoptions", url: "/adoptions", icon: FileHeart },
-    // { title: "Roster", url: "/roster", icon: Calendar },
-  ];
-
-  const devPlaygroundItems = [
-    { title: "Auth", url: "/auth", icon: User },
-    { title: "Realtime Testing", url: "/realtime_test", icon: scanText },
-  ];
-
-  const footerItems = [{ title: "User Profile", url: "/private" }];
+  let currentUserName = $derived(
+    `${$page.data?.userProfile?.first_name || ""} ${$page.data?.userProfile?.last_name || ""}`.trim() ||
+      null
+  );
 
   async function handleSignOut() {
     try {
@@ -78,7 +59,7 @@
               >
                 {#snippet child({ props })}
                   <a href={item.url} {...props}>
-                    <item.icon />
+                    <item.icon class="!h-7 !w-7" />
                     <span>{item.title}</span>
                   </a>
                 {/snippet}
@@ -88,7 +69,7 @@
         </Sidebar.Menu>
       </Sidebar.GroupContent>
     </Sidebar.Group>
-    <Collapsible.Root closed class="group/collapsible">
+    <Collapsible.Root open={false} class="group/collapsible">
       <Sidebar.Group>
         <Sidebar.GroupLabel>
           {#snippet child({ props })}
@@ -136,9 +117,10 @@
       <Sidebar.MenuItem>
         <Sidebar.MenuButton
           class="border border-sidebar-primary/20 cursor-pointer"
+          onclick={() => goto("/private")}
         >
           <User />
-          <span>User Information</span>
+          <span>User Profile</span>
         </Sidebar.MenuButton>
       </Sidebar.MenuItem>
 
@@ -172,8 +154,12 @@
             <User class="size-6" />
           </div>
           <div class="grid flex-1 text-left text-sm leading-tight">
-            <span class="truncate font-medium">User Name</span>
-            <span class="text-muted-foreground truncate text-xs"> email </span>
+            <span class="truncate font-medium"
+              >{currentUserName || "Hello?"}</span
+            >
+            <span class="text-muted-foreground truncate text-xs"
+              >{currentUserEmail || "No user logged in"}</span
+            >
           </div>
         </div>
       </Sidebar.MenuItem>
