@@ -5,7 +5,9 @@ import { randomUUID } from "crypto";
 import { supabase } from "$lib/supabaseClient";
 
 // READ - Load all animals without authentication check
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ parent }) => {
+  // Get parent data (includes session, user, userProfile)
+  const parentData = await parent();
   // Fetch all animals and health checks from the database using the direct supabase client
   const { data: animalData, error } = await supabase.from("animal").select();
 
@@ -32,6 +34,7 @@ export const load: PageServerLoad = async () => {
       error || healthCheckError || adoptionError || shiftError || rfidError
     );
     return {
+      ...parentData, // Include parent data even on error
       animals: [],
       healthChecks: [],
       adoptions: [],
@@ -52,6 +55,7 @@ export const load: PageServerLoad = async () => {
   console.log("✅ RFID data from database:", rfidData);
 
   return {
+    ...parentData, // Include parent data (session, user, userProfile)
     animals: animalData ?? [],
     healthChecks: healthCheckData ?? [],
     adoptions: adoptionData ?? [],

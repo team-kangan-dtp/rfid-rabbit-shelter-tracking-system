@@ -5,7 +5,10 @@ import { randomUUID } from "crypto";
 import { supabase } from "$lib/supabaseClient";
 
 // READ - Load all animals without authentication check
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ parent }) => {
+  // Get parent data (includes session, user, userProfile)
+  const parentData = await parent();
+  
   // Fetch all animals from the database using the direct supabase client
   const { data, error } = await supabase.from("animal").select();
 
@@ -13,6 +16,7 @@ export const load: PageServerLoad = async () => {
   if (error) {
     console.error("Supabase error:", error);
     return {
+      ...parentData,
       animals: [],
       error: error.message,
     };
@@ -21,6 +25,7 @@ export const load: PageServerLoad = async () => {
   console.log("✅ Animal data from database:", data);
 
   return {
+    ...parentData,
     animals: data ?? [],
   };
 };

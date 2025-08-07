@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({
     .order("id");
 
   return {
-    ...parentData, // This includes session, user, supabase from root layout
+    ...parentData, // This includes session, user, userProfile from root layout
     notes: notes ?? [],
   };
 };
