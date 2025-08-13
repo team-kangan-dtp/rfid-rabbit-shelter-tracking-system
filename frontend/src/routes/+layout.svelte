@@ -16,6 +16,9 @@
     [key: string]: any;
   };
 
+  // Check if we're on an auth route - using $derived instead of $:
+  let isAuthRoute = $derived(page.url.pathname.startsWith("/auth"));
+
   let logEvents = $state<LogEvent[]>([]);
   let connectionStatus = $state("Disconnected");
   let channel: any;
@@ -30,21 +33,31 @@
   // Breadcrumb logic based on actual navigation
   let breadcrumbs = $derived.by(() => {
     const pathname = page.url.pathname;
-    
-    // Always start with Dashboard  
-    const crumbs: Array<{ title: string; href: string; isCurrentPage: boolean }> = [
-      { title: "Dashboard", href: "/", isCurrentPage: pathname === "/" }
-    ];
-    
+
+    // Always start with Dashboard
+    const crumbs: Array<{
+      title: string;
+      href: string;
+      isCurrentPage: boolean;
+    }> = [{ title: "Dashboard", href: "/", isCurrentPage: pathname === "/" }];
+
     // Add sub-pages if not on Dashboard
     if (pathname === "/animals") {
       crumbs.push({ title: "Animals", href: "/animals", isCurrentPage: true });
     } else if (pathname === "/scan-logs") {
-      crumbs.push({ title: "Scan logs", href: "/scan-logs", isCurrentPage: true });
+      crumbs.push({
+        title: "Scan logs",
+        href: "/scan-logs",
+        isCurrentPage: true,
+      });
     } else if (pathname === "/private") {
-      crumbs.push({ title: "User Information", href: "/private", isCurrentPage: true });
+      crumbs.push({
+        title: "User Profile",
+        href: "/private",
+        isCurrentPage: true,
+      });
     }
-    
+
     return crumbs;
   });
   onMount(() => {
@@ -156,133 +169,142 @@
 
 <ModeWatcher />
 
-<div class="flex flex-col min-h-screen">
-  <Sidebar.Provider>
-    <AppSidebar />
-    <Sidebar.Inset class="flex flex-col flex-1">
-      <header class="flex h-16 shrink-0 items-center gap-2 px-4">
-        <Sidebar.Trigger class="-ml-1 hidden md:block" />
-        <Breadcrumb.Root>
-          <Breadcrumb.List>
-            {#each breadcrumbs as crumb, index (crumb.href)}
-              <Breadcrumb.Item>
-                {#if crumb.isCurrentPage}
-                  <Breadcrumb.Page class="font-semibold">{crumb.title}</Breadcrumb.Page>
-                {:else}
-                  <Breadcrumb.Link href={crumb.href} class="font-medium">{crumb.title}</Breadcrumb.Link>
+{#if isAuthRoute}
+  <!-- Clean layout for auth pages - no sidebar -->
+  {@render children()}
+{:else}
+  <div class="flex flex-col min-h-screen">
+    <Sidebar.Provider>
+      <AppSidebar />
+      <Sidebar.Inset class="flex flex-col flex-1">
+        <header class="flex h-16 shrink-0 items-center gap-2 px-4">
+          <Sidebar.Trigger class="-ml-1 hidden md:block" />
+          <Breadcrumb.Root>
+            <Breadcrumb.List>
+              {#each breadcrumbs as crumb, index (crumb.href)}
+                <Breadcrumb.Item>
+                  {#if crumb.isCurrentPage}
+                    <Breadcrumb.Page class="font-semibold"
+                      >{crumb.title}</Breadcrumb.Page
+                    >
+                  {:else}
+                    <Breadcrumb.Link href={crumb.href} class="font-medium"
+                      >{crumb.title}</Breadcrumb.Link
+                    >
+                  {/if}
+                </Breadcrumb.Item>
+                {#if index < breadcrumbs.length - 1}
+                  <Breadcrumb.Separator />
                 {/if}
-              </Breadcrumb.Item>
-              {#if index < breadcrumbs.length - 1}
-                <Breadcrumb.Separator />
-              {/if}
-            {/each}
-          </Breadcrumb.List>
-        </Breadcrumb.Root>
-      </header>
-      <div class="flex flex-1 flex-col gap-4 p-4 pt-0 pb-20 md:pb-4">
-        {@render children?.()}
+              {/each}
+            </Breadcrumb.List>
+          </Breadcrumb.Root>
+        </header>
+        <div class="flex flex-1 flex-col gap-4 p-4 pt-0 pb-20 md:pb-4">
+          {@render children?.()}
+        </div>
+
+        <!-- Mobile Bottom Tabs - moved inside Sidebar.Inset -->
+        <div
+          class="fixed bottom-0 left-0 right-0 p-4 bg-background border-t md:hidden z-50"
+        >
+          <MobileBottomTabs />
+        </div>
+      </Sidebar.Inset>
+    </Sidebar.Provider>
+  </div>
+
+  <Dialog.Root bind:open={dialogOpen}>
+    <Dialog.Content class="max-w-md">
+      <Dialog.Header>
+        <Dialog.Title>RFID Scan Detected</Dialog.Title>
+        <Dialog.Description>
+          {#if animalDetails}
+            Animal scan detected for {animalDetails.name}
+          {:else}
+            A new RFID scan has been detected in the system.
+          {/if}
+        </Dialog.Description>
+      </Dialog.Header>
+
+      <!-- Debug info -->
+      <div class="text-xs text-gray-500 p-2 bg-gray-100 rounded">
+        <p>Debug: animalDetails = {JSON.stringify(animalDetails)}</p>
+        <p>Debug: animalDetails exists = {!!animalDetails}</p>
+        <p>Debug: currentScanData = {JSON.stringify(currentScanData)}</p>
       </div>
 
-      <!-- Mobile Bottom Tabs - moved inside Sidebar.Inset -->
-      <div
-        class="fixed bottom-0 left-0 right-0 p-4 bg-background border-t md:hidden z-50"
-      >
-        <MobileBottomTabs />
-      </div>
-    </Sidebar.Inset>
-  </Sidebar.Provider>
-</div>
-
-<Dialog.Root bind:open={dialogOpen}>
-  <Dialog.Content class="max-w-md">
-    <Dialog.Header>
-      <Dialog.Title>RFID Scan Detected</Dialog.Title>
-      <Dialog.Description>
-        {#if animalDetails}
-          Animal scan detected for {animalDetails.name}
-        {:else}
-          A new RFID scan has been detected in the system.
-        {/if}
-      </Dialog.Description>
-    </Dialog.Header>
-
-    <!-- Debug info -->
-    <div class="text-xs text-gray-500 p-2 bg-gray-100 rounded">
-      <p>Debug: animalDetails = {JSON.stringify(animalDetails)}</p>
-      <p>Debug: animalDetails exists = {!!animalDetails}</p>
-      <p>Debug: currentScanData = {JSON.stringify(currentScanData)}</p>
-    </div>
-
-    {#if animalDetails}
-      <div class="grid gap-3 py-4">
-        <div class="grid grid-cols-3 items-center gap-4">
-          <span class="font-medium">Name:</span>
-          <span class="col-span-2">{animalDetails.name}</span>
-        </div>
-        <div class="grid grid-cols-3 items-center gap-4">
-          <span class="font-medium">Species:</span>
-          <span class="col-span-2">{animalDetails.species}</span>
-        </div>
-        <div class="grid grid-cols-3 items-center gap-4">
-          <span class="font-medium">Breed:</span>
-          <span class="col-span-2">{animalDetails.breed || "N/A"}</span>
-        </div>
-        <div class="grid grid-cols-3 items-center gap-4">
-          <span class="font-medium">Fur Colour:</span>
-          <span class="col-span-2">{animalDetails.fur_colour || "N/A"}</span>
-        </div>
-        <div class="grid grid-cols-3 items-center gap-4">
-          <span class="font-medium">Weight:</span>
-          <span class="col-span-2"
-            >{animalDetails.weight_kg
-              ? `${animalDetails.weight_kg} kg`
-              : "N/A"}</span
-          >
-        </div>
-        <div class="grid grid-cols-3 items-center gap-4">
-          <span class="font-medium">Date of Birth:</span>
-          <span class="col-span-2"
-            >{animalDetails.date_of_birth
-              ? new Date(animalDetails.date_of_birth).toLocaleDateString()
-              : "N/A"}</span
-          >
-        </div>
-        <div class="grid grid-cols-3 items-center gap-4">
-          <span class="font-medium">Arrival Date:</span>
-          <span class="col-span-2"
-            >{new Date(animalDetails.arrival_date).toLocaleDateString()}</span
-          >
-        </div>
-        <div class="grid grid-cols-3 items-center gap-4">
-          <span class="font-medium">Status:</span>
-          <span class="col-span-2">{animalDetails.adoption_status}</span>
-        </div>
-        {#if animalDetails.special_needs}
+      {#if animalDetails}
+        <div class="grid gap-3 py-4">
           <div class="grid grid-cols-3 items-center gap-4">
-            <span class="font-medium">Special Needs:</span>
-            <span class="col-span-2">{animalDetails.special_needs}</span>
+            <span class="font-medium">Name:</span>
+            <span class="col-span-2">{animalDetails.name}</span>
           </div>
-        {/if}
-      </div>
-    {:else if currentScanData}
-      <div class="grid gap-3 py-4">
-        <div class="grid grid-cols-3 items-center gap-4">
-          <span class="font-medium">Scan Time:</span>
-          <span class="col-span-2"
-            >{new Date(currentScanData.scan_time).toLocaleString()}</span
-          >
+          <div class="grid grid-cols-3 items-center gap-4">
+            <span class="font-medium">Species:</span>
+            <span class="col-span-2">{animalDetails.species}</span>
+          </div>
+          <div class="grid grid-cols-3 items-center gap-4">
+            <span class="font-medium">Breed:</span>
+            <span class="col-span-2">{animalDetails.breed || "N/A"}</span>
+          </div>
+          <div class="grid grid-cols-3 items-center gap-4">
+            <span class="font-medium">Fur Colour:</span>
+            <span class="col-span-2">{animalDetails.fur_colour || "N/A"}</span>
+          </div>
+          <div class="grid grid-cols-3 items-center gap-4">
+            <span class="font-medium">Weight:</span>
+            <span class="col-span-2"
+              >{animalDetails.weight_kg
+                ? `${animalDetails.weight_kg} kg`
+                : "N/A"}</span
+            >
+          </div>
+          <div class="grid grid-cols-3 items-center gap-4">
+            <span class="font-medium">Date of Birth:</span>
+            <span class="col-span-2"
+              >{animalDetails.date_of_birth
+                ? new Date(animalDetails.date_of_birth).toLocaleDateString()
+                : "N/A"}</span
+            >
+          </div>
+          <div class="grid grid-cols-3 items-center gap-4">
+            <span class="font-medium">Arrival Date:</span>
+            <span class="col-span-2"
+              >{new Date(animalDetails.arrival_date).toLocaleDateString()}</span
+            >
+          </div>
+          <div class="grid grid-cols-3 items-center gap-4">
+            <span class="font-medium">Status:</span>
+            <span class="col-span-2">{animalDetails.adoption_status}</span>
+          </div>
+          {#if animalDetails.special_needs}
+            <div class="grid grid-cols-3 items-center gap-4">
+              <span class="font-medium">Special Needs:</span>
+              <span class="col-span-2">{animalDetails.special_needs}</span>
+            </div>
+          {/if}
         </div>
-        <div class="grid grid-cols-3 items-center gap-4">
-          <span class="font-medium">User Scan:</span>
-          <span class="col-span-2"
-            >{currentScanData.user_id ? "Yes" : "No"}</span
-          >
+      {:else if currentScanData}
+        <div class="grid gap-3 py-4">
+          <div class="grid grid-cols-3 items-center gap-4">
+            <span class="font-medium">Scan Time:</span>
+            <span class="col-span-2"
+              >{new Date(currentScanData.scan_time).toLocaleString()}</span
+            >
+          </div>
+          <div class="grid grid-cols-3 items-center gap-4">
+            <span class="font-medium">User Scan:</span>
+            <span class="col-span-2"
+              >{currentScanData.user_id ? "Yes" : "No"}</span
+            >
+          </div>
         </div>
-      </div>
-    {/if}
+      {/if}
 
-    <Dialog.Footer>
-      <Dialog.Close>Close</Dialog.Close>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+      <Dialog.Footer>
+        <Dialog.Close>Close</Dialog.Close>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
+{/if}

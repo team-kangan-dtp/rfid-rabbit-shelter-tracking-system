@@ -13,7 +13,8 @@
   import Rabbit from "@lucide/svelte/icons/rabbit";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
-  import { supabase } from "$lib/supabaseClient";
+  // OLD: Wrong supabase client - this is the custom client with persistSession: false
+  // import { supabase } from "$lib/supabaseClient";
   import { toggleMode } from "mode-watcher";
   import { navItems, devPlaygroundItems } from "$lib/config/navigation.js";
 
@@ -23,14 +24,43 @@
       null
   );
 
-  async function handleSignOut() {
-    try {
-      await supabase.auth.signOut();
+  // NEW: Get proper server supabase client from page data (same as private layout)
+  let { supabase } = $derived($page.data);
+
+  // Determine which page is currently active (similar to mobile-bottom-tabs)
+  let currentActiveItem = $derived.by(() => {
+    const pathname = $page.url.pathname;
+
+    // Check nav items first
+    const navItem = navItems.find((item) => item.url === pathname);
+    if (navItem) return navItem.title;
+
+    // Check for private/user profile route
+    if (pathname === "/private") return "User Profile";
+
+    // Default to Dashboard for root
+    return "Dashboard";
+  });
+
+  // OLD: handleSignOut function using wrong supabase client and fetch approach
+  // async function handleSignOut() {
+  //   try {
+  //     await supabase.auth.signOut();
+  //     goto("/auth");
+  //   } catch (error) {
+  //     console.error("Error signing out:", error);
+  //   }
+  // }
+
+  // NEW: handleSignOut function matching private layout pattern
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error(error);
+    } else {
       goto("/auth");
-    } catch (error) {
-      console.error("Error signing out:", error);
     }
-  }
+  };
 </script>
 
 <Sidebar.Root>
@@ -54,12 +84,15 @@
           {#each navItems as item (item.title)}
             <Sidebar.MenuItem>
               <Sidebar.MenuButton
-                class="text-lg border border-sidebar-primary/25"
-                size="lg"
+                class="text-lg border border-sidebar-primary/25 {currentActiveItem ===
+                item.title
+                  ? 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground'
+                  : ''}"
+                size="m"
               >
                 {#snippet child({ props })}
                   <a href={item.url} {...props}>
-                    <item.icon class="!h-7 !w-7" />
+                    <item.icon />
                     <span>{item.title}</span>
                   </a>
                 {/snippet}
@@ -116,7 +149,10 @@
       <!-- User Information -->
       <Sidebar.MenuItem>
         <Sidebar.MenuButton
-          class="border border-sidebar-primary/20 cursor-pointer"
+          class="border border-sidebar-primary/20 cursor-pointer {currentActiveItem ===
+          'User Profile'
+            ? 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground'
+            : ''}"
           onclick={() => goto("/private")}
         >
           <User />
