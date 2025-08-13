@@ -135,17 +135,6 @@
   </Sidebar.Content>
   <Sidebar.Footer>
     <Sidebar.Menu class="space-y-2">
-      <!-- Light Dark Toggle -->
-      <Sidebar.MenuItem>
-        <Sidebar.MenuButton
-          class="border border-sidebar-primary/20 cursor-pointer"
-          onclick={toggleMode}
-        >
-          <SunMoon />
-          <span>Toggle Theme</span>
-        </Sidebar.MenuButton>
-      </Sidebar.MenuItem>
-
       <!-- User Information -->
       <Sidebar.MenuItem>
         <Sidebar.MenuButton

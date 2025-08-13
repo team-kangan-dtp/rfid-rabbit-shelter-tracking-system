@@ -4,6 +4,10 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import type { PageData } from "./$types";
   import { Root } from "$lib/components/ui/button";
+  import { toggleMode } from "mode-watcher";
+  // import { SunMoon } from "@lucide/svelte/icons/sun-moon";
+  import { Button } from "$lib/components/ui/button";
+  import SunMoon from "@lucide/svelte/icons/sun-moon";
 
   let { data } = $props();
   let { supabase, user } = $derived(data);
@@ -15,10 +19,10 @@
       <h1
         class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl"
       >
-        Animals
+        User Profile
       </h1>
       <p class="text-xl text-muted-foreground">
-        Manage your animal shelter records
+        Manage your profile information and settings
       </p>
     </div>
   </div>
@@ -30,3 +34,14 @@
     <Card.Description>{user?.email}</Card.Description>
   </Card.Header>
 </Card.Root>
+
+<!-- Light Dark Toggle -->
+<!-- <Button
+  class="border border-sidebar-primary/20 cursor-pointer"
+  onclick={toggleMode}
+>
+  <SunMoon />
+  <span>Toggle Theme</span>
+</Button> -->
+
+<Button onclick={toggleMode}><SunMoon /> Toggle mode</Button>

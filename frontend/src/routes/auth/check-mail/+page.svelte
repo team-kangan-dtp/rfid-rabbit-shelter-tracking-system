@@ -49,7 +49,9 @@
         </div>
 
         <!-- Back to Sign In Button -->
-        <Button href="/auth" class="w-full">Back to Sign In</Button>
+        <a href="/auth" class="w-full">
+          <Button class="w-full">Back to Sign In</Button>
+        </a>
       </Card.Content>
     </Card.Root>
   </div>
