@@ -248,7 +248,7 @@ CREATE TABLE rfid_log (
     scan_time TIMESTAMP DEFAULT NOW() NOT NULL,
     user_id UUID REFERENCES "user"(id),     -- User who scanned (volunteer)
     animal_id UUID REFERENCES animal(id),   -- Animal that was scanned
-    animal_note UUID REFERENCES animal_note(id) -- Note associated with the scan
+    animal_note UUID REFERENCES animal_note(id) ON DELETE SET NULL -- Note associated with the scan
 );
 
 -- Enable realtime for rfid_log table
