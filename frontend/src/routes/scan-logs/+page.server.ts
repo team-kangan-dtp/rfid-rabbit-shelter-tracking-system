@@ -11,7 +11,8 @@ export const load: PageServerLoad = async () => {
       id, 
       scan_time, 
       user_id(id, first_name, last_name), 
-      animal_id(id, name, species)
+      animal_id(id, name, species),
+      animal_note(id, note_type)
     `
     )
     .order("scan_time", { ascending: false });
