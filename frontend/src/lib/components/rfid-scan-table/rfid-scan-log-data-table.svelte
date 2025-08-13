@@ -54,6 +54,7 @@
       `${original.animal_id?.name} (${original.animal_id?.species})`,
       original.animal_id?.name,
       original.animal_id?.species,
+      original.animal_note?.note_type,
     ];
 
     return searchableValues.some((value) =>
