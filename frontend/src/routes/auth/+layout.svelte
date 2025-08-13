@@ -2,10 +2,7 @@
   let { children } = $props();
 </script>
 
-<header>
-  <nav>
-    <a href="/">Home</a>
-  </nav>
-</header>
-
-{@render children()}
+<!-- Clean layout without sidebar - overrides the main layout -->
+<div class="min-h-screen">
+  {@render children()}
+</div>
