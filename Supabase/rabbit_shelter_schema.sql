@@ -245,9 +245,10 @@ CREATE TABLE health_check (
 -- Tracks RFID scans for volunteers and animals
 CREATE TABLE rfid_log (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    scan_time TIMESTAMP DEFAULT NOW(),
+    scan_time TIMESTAMP DEFAULT NOW() NOT NULL,
     user_id UUID REFERENCES "user"(id),     -- User who scanned (volunteer)
-    animal_id UUID REFERENCES animal(id)   -- Animal that was scanned
+    animal_id UUID REFERENCES animal(id),   -- Animal that was scanned
+    animal_note UUID REFERENCES animal_note(id) -- Note associated with the scan
 );
 
 -- Enable realtime for rfid_log table
