@@ -1,21 +1,32 @@
 import type { PageServerLoad } from "./$types";
+import { supabase } from "$lib/supabaseClient";
 
-export const load: PageServerLoad = async ({
-  depends,
-  locals: { supabase },
-  parent,
-}) => {
-  // Get user/session data from parent layout
+// READ - Load current user data without authentication check
+export const load: PageServerLoad = async ({ parent }) => {
+  // Get parent data (includes session, user, userProfile)
   const parentData = await parent();
 
-  depends("supabase:db:notes");
-  const { data: notes } = await supabase
-    .from("notes")
-    .select("id,note")
-    .order("id");
+  // Fetch current user from the database using the direct supabase client
+  const { data, error } = await supabase
+    .from("user")
+    .select()
+    .eq("id", parentData.user?.id);
+
+  // Handle errors gracefully
+  if (error) {
+    console.error("Supabase error:", error);
+    return {
+      ...parentData,
+      currentUser: null,
+      error: error.message,
+    };
+  }
+
+  console.log("✅ Current user data from database:", data);
+  console.log("✅ Extracting first user from array:", data ? data[0] : null);
 
   return {
-    ...parentData, // This includes session, user, userProfile from root layout
-    notes: notes ?? [],
+    ...parentData,
+    currentUser: data ? data[0] : null,
   };
 };
