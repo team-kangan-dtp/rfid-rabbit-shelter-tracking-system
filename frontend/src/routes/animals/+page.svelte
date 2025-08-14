@@ -8,6 +8,7 @@
   import * as Sheet from "$lib/components/ui/sheet/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import { Separator } from "$lib/components/ui/separator/index.js";
+  import PageHeader from "$lib/components/page-header.svelte";
 
   // Get the data from the server
   export let data: PageData;
@@ -194,20 +195,11 @@
 
 <!-- Animals heading -->
 <div class="p-6 pb-0">
-  <div class="flex items-center justify-between">
-    <div class="space-y-1">
-      <h1
-        class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl"
-      >
-        Animals
-      </h1>
-      <p class="text-xl text-muted-foreground">
-        Manage your animal shelter records
-      </p>
-    </div>
-    <!-- Add Animal Button moved to top -->
-    <Button onclick={handleCreate}>Add New Animal</Button>
-  </div>
+  <PageHeader title="Animals" description="Manage your animal shelter records">
+    {#snippet button()}
+      <Button onclick={handleCreate}>Add New Animal</Button>
+    {/snippet}
+  </PageHeader>
 </div>
 
 <!-- Search and Filter Section -->
