@@ -8,6 +8,7 @@
   import * as Sheet from "$lib/components/ui/sheet/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import { Separator } from "$lib/components/ui/separator/index.js";
+  import AnimalModal from "$lib/components/AnimalModal.svelte";
   import PageHeader from "$lib/components/page-header.svelte";
 
   // Get the data from the server
@@ -37,6 +38,9 @@
   let editingAnimal: Animal | null = null;
   let showCreateForm = false;
   let showEditForm = false;
+  let showAnimalModal = false;
+  let viewingAnimal: Animal | null = null;
+  let modalMode: "view" | "edit" = "view";
 
   // Update showEditForm when editingAnimal changes
   $: showEditForm = editingAnimal !== null;
@@ -139,8 +143,17 @@
 
   // Handle edit from data table
   function handleEdit(animal: Animal) {
-    editingAnimal = { ...animal };
+    viewingAnimal = { ...animal };
+    modalMode = "edit";
     showCreateForm = false;
+    showAnimalModal = true;
+  }
+
+  // Handle view from data table
+  function handleView(animal: Animal) {
+    viewingAnimal = { ...animal };
+    modalMode = "view";
+    showAnimalModal = true;
   }
 
   // Handle delete from data table
@@ -185,6 +198,9 @@
   function handleCancel() {
     editingAnimal = null;
     showCreateForm = false;
+    showAnimalModal = false;
+    viewingAnimal = null;
+    modalMode = "view";
   }
 
   // Add form submission handler for debugging
@@ -317,6 +333,13 @@
             <div class="flex items-start justify-between">
               <h3 class="font-semibold text-lg">{animal.name}</h3>
               <div class="flex gap-2 ml-4">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onclick={() => handleView(animal)}
+                >
+                  View
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -811,3 +834,6 @@
     {/if}
   </Sheet.Content>
 </Sheet.Root>
+
+<!-- Animal Modal -->
+<AnimalModal animal={viewingAnimal} bind:open={showAnimalModal} mode={modalMode} />
