@@ -177,9 +177,9 @@
     <Sidebar.Provider>
       <AppSidebar />
       <Sidebar.Inset class="flex flex-col flex-1">
-        <header class="flex h-16 shrink-0 items-center gap-2 px-4">
-          <Sidebar.Trigger class="-ml-1 hidden md:block" />
-          <Breadcrumb.Root class="-ml-1 hidden md:block">
+        <header class="h-12 shrink-0 items-center gap-2 px-4 hidden md:flex">
+          <Sidebar.Trigger class="-ml-1" />
+          <Breadcrumb.Root>
             <Breadcrumb.List>
               {#each breadcrumbs as crumb, index (crumb.href)}
                 <Breadcrumb.Item>

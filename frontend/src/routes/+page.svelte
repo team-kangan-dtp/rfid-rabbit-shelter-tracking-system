@@ -127,7 +127,7 @@
   }
 </script>
 
-<main class="px-6 pt-0 pb-6">
+<main class="px-6 pt-6 pb-6">
   <div class="flex items-center justify-between mb-2">
     <div class="space-y-1">
       <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
