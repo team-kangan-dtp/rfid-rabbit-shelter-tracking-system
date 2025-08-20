@@ -15,9 +15,20 @@
     createSvelteTable,
     FlexRender,
   } from "$lib/components/ui/data-table/index.js";
+  import {
+    type DateValue,
+    DateFormatter,
+    getLocalTimeZone,
+  } from "@internationalized/date";
+  import type { DateRange } from "bits-ui";
   import * as Table from "$lib/components/ui/table/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
+  import { cn } from "$lib/utils.js";
+  import { RangeCalendar } from "$lib/components/ui/range-calendar/index.js";
+  import * as Popover from "$lib/components/ui/popover/index.js";
+  import CalendarIcon from "@lucide/svelte/icons/calendar";
+  import SearchIcon from "@lucide/svelte/icons/search";
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -36,8 +47,15 @@
   let columnFilters = $state<ColumnFiltersState>([]);
   let sorting = $state<SortingState>([]);
   let globalFilter = $state("");
-  let dateFrom = $state("");
-  let dateTo = $state("");
+  // Date range state (shadcn RangeCalendar)
+  let dateRange = $state<DateRange | undefined>(undefined);
+  // Temporary start value while selecting a range
+  let startValue: DateValue | undefined = $state(undefined);
+
+  // Locale
+  const df = new DateFormatter("en-US", {
+    dateStyle: "long",
+  });
 
   // Custom filter functions
   const globalFilterFn = (row: any, columnId: string, filterValue: string) => {
@@ -65,19 +83,26 @@
   };
 
   const dateRangeFilterFn = (row: any, columnId: string, filterValue: any) => {
-    const { from, to } = filterValue || {};
-    if (!from && !to) return true;
+    if (!filterValue) return true;
+    const { start, end } = filterValue as {
+      start?: DateValue;
+      end?: DateValue;
+    };
+    if (!start && !end) return true;
 
     const cellValue = row.getValue(columnId);
     if (!cellValue) return false;
 
     const cellDate = new Date(cellValue);
-    const fromDate = from ? new Date(from) : null;
-    const toDate = to ? new Date(to + "T23:59:59") : null; // Include full day
+    const startDate = start ? start.toDate(getLocalTimeZone()) : null;
+    const endDate = end ? end.toDate(getLocalTimeZone()) : null;
 
-    if (fromDate && cellDate < fromDate) return false;
-    if (toDate && cellDate > toDate) return false;
-
+    if (startDate && cellDate < startDate) return false;
+    if (endDate) {
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      if (cellDate > endOfDay) return false;
+    }
     return true;
   };
 
@@ -130,8 +155,8 @@
   // Clear all filters
   function clearFilters() {
     globalFilter = "";
-    dateFrom = "";
-    dateTo = "";
+    dateRange = undefined;
+    startValue = undefined;
     sorting = [];
     table.resetColumnFilters();
   }
@@ -139,20 +164,14 @@
   // Update date range filter when date inputs change
   $effect(() => {
     const filters: ColumnFiltersState = [];
-
-    if (dateFrom || dateTo) {
+    if (dateRange?.start || dateRange?.end) {
       filters.push({
         id: "scan_time",
-        value: { from: dateFrom, to: dateTo },
+        value: { start: dateRange?.start, end: dateRange?.end },
       });
     }
-
-    // Find the scan_time column and set its filter function
     const scanTimeColumn = table.getColumn("scan_time");
-    if (scanTimeColumn) {
-      scanTimeColumn.columnDef.filterFn = dateRangeFilterFn;
-    }
-
+    if (scanTimeColumn) scanTimeColumn.columnDef.filterFn = dateRangeFilterFn;
     columnFilters = filters;
   });
 </script>
@@ -163,37 +182,60 @@
   <div
     class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2"
   >
-    <Input
-      placeholder={searchPlaceholder}
-      value={globalFilter}
-      oninput={(e) => (globalFilter = e.currentTarget.value)}
-      class="w-full sm:max-w-sm"
-    />
+    <span class="flex items-center">
+      <SearchIcon class="mr-3 text-gray-500" />
+      <Input
+        placeholder={searchPlaceholder}
+        value={globalFilter}
+        oninput={(e) => (globalFilter = e.currentTarget.value)}
+        class="w-full sm:max-w-sm"
+      />
+    </span>
+
     <Button variant="outline" onclick={clearFilters} class="w-full sm:w-auto"
       >Clear All Filters</Button
     >
   </div>
 
-  <!-- Second row: Date range filters -->
+  <!-- Second row: Date range filter (shadcn RangeCalendar) -->
   <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
     <span class="text-sm font-medium">Date Range:</span>
-    <div
-      class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto"
-    >
-      <Input
-        type="date"
-        value={dateFrom}
-        oninput={(e) => (dateFrom = e.currentTarget.value)}
-        class="w-full sm:w-40"
-      />
-      <span class="text-sm text-muted-foreground hidden sm:inline">to</span>
-      <Input
-        type="date"
-        value={dateTo}
-        oninput={(e) => (dateTo = e.currentTarget.value)}
-        class="w-full sm:w-40"
-      />
-    </div>
+    <Popover.Root>
+      <Popover.Trigger>
+        {#snippet child({ props })}
+          <Button
+            variant="outline"
+            class={cn(
+              "w-[300px] justify-start text-left font-normal",
+              !dateRange && !startValue && "text-muted-foreground"
+            )}
+            {...props}
+          >
+            <CalendarIcon class="mr-2 size-4" />
+            {#if dateRange?.start}
+              {#if dateRange?.end}
+                {df.format(dateRange.start.toDate(getLocalTimeZone()))} - {df.format(
+                  dateRange.end.toDate(getLocalTimeZone())
+                )}
+              {:else}
+                {df.format(dateRange.start.toDate(getLocalTimeZone()))}
+              {/if}
+            {:else if startValue}
+              {df.format(startValue.toDate(getLocalTimeZone()))}
+            {:else}
+              Pick a date
+            {/if}
+          </Button>
+        {/snippet}
+      </Popover.Trigger>
+      <Popover.Content class="w-auto p-0" align="start">
+        <RangeCalendar
+          bind:value={dateRange}
+          onStartValueChange={(v) => (startValue = v)}
+          numberOfMonths={2}
+        />
+      </Popover.Content>
+    </Popover.Root>
   </div>
 </div>
 
@@ -262,12 +304,12 @@
 <!-- Mobile Cards (visible only on mobile) -->
 <div class="md:hidden space-y-4">
   {#each table.getRowModel().rows as row (row.id)}
-    {@const rowData = row.original}
+    {@const rowData = row.original as any}
     <div class="bg-card border rounded-lg p-4 space-y-3">
-      <!-- Scan ID and Time -->
+      <!-- Scan Time -->
       <div class="flex justify-between items-start">
         <div>
-          <div class="text-sm font-medium">Scan #{rowData.id}</div>
+          <div class="text-sm font-medium">Scan Time</div>
           <div class="text-xs text-muted-foreground">
             {new Date(rowData.scan_time).toLocaleString()}
           </div>
@@ -293,6 +335,16 @@
           <div class="text-sm">
             {rowData.user_id.first_name}
             {rowData.user_id.last_name}
+          </div>
+        </div>
+      {/if}
+
+      <!-- Interaction Type -->
+      {#if rowData.animal_note}
+        <div class="border-t pt-3">
+          <div class="text-xs text-muted-foreground">Interaction Type:</div>
+          <div class="text-sm">
+            {rowData.animal_note.note_type || "N/A"}
           </div>
         </div>
       {/if}
