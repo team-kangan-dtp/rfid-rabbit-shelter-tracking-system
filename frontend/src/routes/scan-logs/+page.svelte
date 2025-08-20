@@ -8,12 +8,19 @@
   export let data: PageData;
 </script>
 
-<div class="p-6 pb-0">
+<div class="px-6 pt-0 pb-6">
+  <div class="flex items-center justify-between mb-2">
+    <div class="space-y-1">
+      <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+        Scan Logs
+      </h1>
+      <p class="text-xl text-muted-foreground">
+        View all recent scan logs for your animals.
+      </p>
+    </div>
+  </div>
 
-  <PageHeader
-    title="Scan Logs"
-    description="View all recent scan logs for your animals."
-  />
-
-  <RfidScanLogDataTable data={data.rfid_logs} {columns} />
+  <div class="mt-6">
+    <RfidScanLogDataTable data={data.rfid_logs} {columns} />
+  </div>
 </div>

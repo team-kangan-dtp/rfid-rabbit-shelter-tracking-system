@@ -210,16 +210,24 @@
 </script>
 
 <!-- Animals heading -->
-<div class="p-6 pb-0">
-  <PageHeader title="Animals" description="Manage your animal shelter records">
-    {#snippet button()}
+<div class="px-6 pt-0 pb-0">
+  <div class="flex items-center justify-between mb-2">
+    <div class="space-y-1">
+      <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+        Animals
+      </h1>
+      <p class="text-xl text-muted-foreground">
+        Manage your animal shelter records
+      </p>
+    </div>
+    <div class="ml-4">
       <Button onclick={handleCreate}>Add New Animal</Button>
-    {/snippet}
-  </PageHeader>
+    </div>
+  </div>
 </div>
 
 <!-- Search and Filter Section -->
-<div class="p-6 space-y-6">
+<div class="px-6 pt-0 pb-6 space-y-6">
   <!-- Search Bar -->
   <div class="space-y-2">
     <Label for="search">Search Animals</Label>

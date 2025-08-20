@@ -127,11 +127,17 @@
   }
 </script>
 
-<main class="p-6 pb-0">
-  <PageHeader
-    title="Dashboard"
-    description="Overview of shelter operations and animal status."
-  />
+<main class="px-6 pt-0 pb-6">
+  <div class="flex items-center justify-between mb-2">
+    <div class="space-y-1">
+      <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+        Dashboard
+      </h1>
+      <p class="text-xl text-muted-foreground">
+        Overview of shelter operations and animal status.
+      </p>
+    </div>
+  </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
     <Card.Root class="w-full max-w-sm">

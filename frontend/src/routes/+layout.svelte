@@ -105,7 +105,7 @@
             // Check if user is authenticated before querying
             if (!session && !user) {
               console.log(
-                "User not authenticated - cannot fetch animal details"
+                "User not authenticated - cannot fetch animal details",
               );
               animalDetails = {
                 name: "Authentication Required",
@@ -127,7 +127,7 @@
                 console.log("Animal details set:", animal);
                 console.log(
                   "animalDetails state after setting:",
-                  animalDetails
+                  animalDetails,
                 );
                 console.log("Dialog should show animal data for:", animal.name);
               } else {
@@ -142,7 +142,7 @@
           }
 
           dialogOpen = true;
-        }
+        },
       )
       .subscribe((status) => {
         console.log("Subscription status:", status);
@@ -179,7 +179,7 @@
       <Sidebar.Inset class="flex flex-col flex-1">
         <header class="flex h-16 shrink-0 items-center gap-2 px-4">
           <Sidebar.Trigger class="-ml-1 hidden md:block" />
-          <Breadcrumb.Root>
+          <Breadcrumb.Root class="-ml-1 hidden md:block">
             <Breadcrumb.List>
               {#each breadcrumbs as crumb, index (crumb.href)}
                 <Breadcrumb.Item>
