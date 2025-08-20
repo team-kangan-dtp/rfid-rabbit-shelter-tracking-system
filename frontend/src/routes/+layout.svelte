@@ -203,15 +203,13 @@
         <div class="flex flex-1 flex-col gap-4 p-4 pt-0 pb-20 md:pb-4">
           {@render children?.()}
         </div>
-
-        <!-- Mobile Bottom Tabs - moved inside Sidebar.Inset -->
-        <div
-          class="fixed bottom-0 left-0 right-0 p-4 bg-background border-t md:hidden z-50"
-        >
-          <MobileBottomTabs />
-        </div>
       </Sidebar.Inset>
     </Sidebar.Provider>
+
+    <!-- Mobile Bottom Tabs - moved outside Sidebar.Provider to prevent layout shifts -->
+    <div class="fixed bottom-0 left-0 right-0 md:hidden z-50">
+      <MobileBottomTabs />
+    </div>
   </div>
 
   <Dialog.Root bind:open={dialogOpen}>

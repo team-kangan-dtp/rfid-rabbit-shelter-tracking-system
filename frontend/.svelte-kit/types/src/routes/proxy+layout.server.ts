@@ -1,8 +1,9 @@
+// @ts-nocheck
 import type { LayoutServerLoad } from "./$types";
-export const load: LayoutServerLoad = async ({
+export const load = async ({
   locals: { safeGetSession, supabase },
   cookies,
-}) => {
+}: Parameters<LayoutServerLoad>[0]) => {
   const { session, user } = await safeGetSession();
   
   let userProfile = null;

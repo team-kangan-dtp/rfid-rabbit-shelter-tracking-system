@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   createBrowserClient,
   createServerClient,
@@ -9,7 +10,7 @@ import {
 } from "$env/static/public";
 import type { LayoutLoad } from "./$types";
 
-export const load: LayoutLoad = async ({ data, depends, fetch }) => {
+export const load = async ({ data, depends, fetch }: Parameters<LayoutLoad>[0]) => {
   /**
    * Declare a dependency so the layout can be invalidated, for example, on
    * session refresh.

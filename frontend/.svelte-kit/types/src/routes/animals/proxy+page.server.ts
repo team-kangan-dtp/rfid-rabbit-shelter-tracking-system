@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad, Actions } from "./$types";
 import { fail } from "@sveltejs/kit";
@@ -5,7 +6,7 @@ import { randomUUID } from "crypto";
 import { supabase } from "$lib/supabaseClient";
 
 // READ - Load all animals without authentication check
-export const load: PageServerLoad = async ({ parent }) => {
+export const load = async ({ parent }: Parameters<PageServerLoad>[0]) => {
   // Get parent data (includes session, user, userProfile)
   const parentData = await parent();
   
@@ -29,9 +30,9 @@ export const load: PageServerLoad = async ({ parent }) => {
 };
 
 // Actions without authentication checks
-export const actions: Actions = {
+export const actions = {
   // CREATE - Add a new animal
-  create: async ({ request }) => {
+  create: async ({ request }: import('./$types').RequestEvent) => {
     console.log("🚀🚀🚀 CREATE ACTION CALLED! 🚀🚀🚀");
 
     try {
@@ -83,7 +84,7 @@ export const actions: Actions = {
   },
 
   // UPDATE - Update an existing animal
-  update: async ({ request }) => {
+  update: async ({ request }: import('./$types').RequestEvent) => {
     console.log("🔄 UPDATE ACTION CALLED");
     const data = await request.formData();
     const id = data.get("id") as string;
@@ -120,7 +121,7 @@ export const actions: Actions = {
   },
 
   // DELETE - Delete an existing animal
-  delete: async ({ request }) => {
+  delete: async ({ request }: import('./$types').RequestEvent) => {
     console.log("🗑️ DELETE ACTION CALLED");
     const data = await request.formData();
     const id = data.get("id") as string;
@@ -135,3 +136,4 @@ export const actions: Actions = {
     return { success: true };
   },
 };
+;null as any as Actions;

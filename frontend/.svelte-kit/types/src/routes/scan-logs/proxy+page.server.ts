@@ -1,8 +1,9 @@
+// @ts-nocheck
 import type { PageServerLoad, Actions } from "./$types";
 import { supabase } from "$lib/supabaseClient";
 
 // READ - Load all rfid logs without authentication check
-export const load: PageServerLoad = async () => {
+export const load = async () => {
   // Fetch all rfid logs from the database using the direct supabase client
   const { data, error } = await supabase
     .from("rfid_log")
@@ -32,3 +33,4 @@ export const load: PageServerLoad = async () => {
     rfid_logs: data ?? [],
   };
 };
+;null as any as PageServerLoad;
