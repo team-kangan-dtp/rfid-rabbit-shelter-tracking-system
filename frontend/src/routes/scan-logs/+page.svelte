@@ -17,7 +17,7 @@
         Scan Logs
       </h1>
       <p class="text-xl text-muted-foreground">
-        View all recent scan logs for your animals.
+        View all recent scan logs for your animals
       </p>
     </div>
   </div>
