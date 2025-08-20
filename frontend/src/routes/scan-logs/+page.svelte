@@ -9,6 +9,7 @@
 </script>
 
 <div class="p-6 pb-0">
+
   <PageHeader
     title="Scan Logs"
     description="View all recent scan logs for your animals."
