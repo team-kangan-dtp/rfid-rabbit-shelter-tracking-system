@@ -28,6 +28,7 @@
   export let animal: Animal | null = null;
   export let open: boolean = false;
   export let mode: "view" | "edit" = "view";
+  export let allAnimals: Animal[] = [];
 
   // Create a local copy for editing
   let editingAnimal: Animal | null = null;
@@ -42,7 +43,7 @@
   <Dialog.Content class="max-w-2xl max-h-[90vh] flex flex-col">
     <Dialog.Header>
       <Dialog.Title>
-        {animal ? `${mode === "edit" ? "Edit" : "View"} ${animal.name}` : "Animal Details"}
+        {animal ? animal.name : "Animal Details"}
       </Dialog.Title>
       <Dialog.Description>
         {mode === "edit" ? "Make changes to the animal's information below." : "View detailed information about this animal."}
@@ -140,17 +141,13 @@
               {#if animal.special_needs}
                 <div>
                   <span class="font-medium text-muted-foreground">Special Needs:</span>
-                  <div class="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-md">
-                    <p class="text-sm">{animal.special_needs}</p>
-                  </div>
+                  <p class="mt-2 text-sm text-orange-700 bg-orange-50 p-3 rounded-md">{animal.special_needs}</p>
                 </div>
               {/if}
               {#if animal.description}
                 <div>
                   <span class="font-medium text-muted-foreground">Description:</span>
-                  <div class="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-md">
-                    <p class="text-sm">{animal.description}</p>
-                  </div>
+                  <p class="mt-2 text-sm">{animal.description}</p>
                 </div>
               {/if}
             </div>
@@ -291,14 +288,23 @@
 
           <!-- Bonded With -->
           <div class="space-y-2">
-            <Label for="edit-bonded-with">Bonded With (Animal ID)</Label>
-            <Input
-              id="edit-bonded-with"
-              type="text"
-              name="bonded_with"
-              bind:value={editingAnimal.bonded_with}
-              placeholder="Enter animal ID if bonded"
-            />
+            <Label for="edit-bonded-with">Bonded With</Label>
+            <Select.Root type="single" bind:value={editingAnimal.bonded_with}>
+              <Select.Trigger>
+                {#if editingAnimal.bonded_with}
+                  {allAnimals.find(a => a.id === editingAnimal.bonded_with)?.name || editingAnimal.bonded_with}
+                {:else}
+                  Select an animal...
+                {/if}
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="">None</Select.Item>
+                {#each allAnimals.filter(a => a.id !== editingAnimal.id) as bondAnimal}
+                  <Select.Item value={bondAnimal.id}>{bondAnimal.name} ({bondAnimal.species})</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+            <input type="hidden" name="bonded_with" bind:value={editingAnimal.bonded_with} />
           </div>
 
           <!-- Special Needs -->

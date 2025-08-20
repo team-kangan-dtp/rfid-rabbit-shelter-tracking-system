@@ -141,6 +141,7 @@
     filterDateTo = "";
   }
 
+
   // Handle edit from data table
   function handleEdit(animal: Animal) {
     viewingAnimal = { ...animal };
@@ -326,101 +327,54 @@
 <div class="px-6 pb-6">
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {#each filteredAnimals as animal (animal.id)}
-      <Card.Root>
-        <Card.Content class="p-4">
-          <div class="space-y-3">
-            <!-- Header with name and buttons -->
-            <div class="flex items-start justify-between">
-              <h3 class="font-semibold text-lg">{animal.name}</h3>
-              <div class="flex gap-2 ml-4">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onclick={() => handleView(animal)}
-                >
-                  View
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onclick={() => handleEdit(animal)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onclick={() => handleDelete(animal)}
-                >
-                  Delete
-                </Button>
+        <Card.Root>
+          <Card.Content class="p-4">
+            <div class="space-y-3">
+              <!-- Header with name and buttons -->
+              <div class="flex items-start justify-between">
+                <h3 class="font-semibold text-lg">{animal.name}</h3>
+                <div class="flex gap-2 ml-4">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onclick={() => handleView(animal)}
+                  >
+                    View
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onclick={() => handleEdit(animal)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onclick={() => handleDelete(animal)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </div>
+
+              <!-- Animal details -->
+              <div class="text-sm text-muted-foreground space-y-1">
+                <p><span class="font-medium">Species:</span> {animal.species}</p>
+                {#if animal.date_of_birth}
+                  <p>
+                    <span class="font-medium">Date of Birth:</span>
+                    {animal.date_of_birth}
+                  </p>
+                {/if}
+                <p>
+                  <span class="font-medium">Adoption Status:</span>
+                  {animal.adoption_status}
+                </p>
               </div>
             </div>
-
-            <!-- Animal details -->
-            <div class="text-sm text-muted-foreground space-y-1">
-              <p><span class="font-medium">Species:</span> {animal.species}</p>
-              {#if animal.breed}
-                <p><span class="font-medium">Breed:</span> {animal.breed}</p>
-              {/if}
-              {#if animal.date_of_birth}
-                <p>
-                  <span class="font-medium">Date of Birth:</span>
-                  {animal.date_of_birth}
-                </p>
-              {/if}
-              {#if animal.fur_colour}
-                <p>
-                  <span class="font-medium">Fur Colour:</span>
-                  {animal.fur_colour}
-                </p>
-              {/if}
-              {#if animal.weight_kg}
-                <p>
-                  <span class="font-medium">Weight:</span>
-                  {animal.weight_kg} kg
-                </p>
-              {/if}
-              <p>
-                <span class="font-medium">Arrival Date:</span>
-                {animal.arrival_date}
-              </p>
-              <p>
-                <span class="font-medium">Neutered:</span>
-                {animal.neutered ? "Yes" : "No"}
-              </p>
-              <p>
-                <span class="font-medium">Adoption Status:</span>
-                {animal.adoption_status}
-              </p>
-              {#if animal.rfid_tag}
-                <p>
-                  <span class="font-medium">RFID Tag:</span>
-                  {animal.rfid_tag}
-                </p>
-              {/if}
-              {#if animal.special_needs}
-                <p>
-                  <span class="font-medium">Special Needs:</span>
-                  {animal.special_needs}
-                </p>
-              {/if}
-              {#if animal.description}
-                <p>
-                  <span class="font-medium">Description:</span>
-                  {animal.description}
-                </p>
-              {/if}
-              {#if animal.bonded_with}
-                <p>
-                  <span class="font-medium">Bonded With:</span>
-                  {animal.bonded_with}
-                </p>
-              {/if}
-            </div>
-          </div>
-        </Card.Content>
-      </Card.Root>
+          </Card.Content>
+        </Card.Root>
     {:else}
       <div class="col-span-full text-center py-8 text-muted-foreground">
         <p>
@@ -836,4 +790,4 @@
 </Sheet.Root>
 
 <!-- Animal Modal -->
-<AnimalModal animal={viewingAnimal} bind:open={showAnimalModal} mode={modalMode} />
+<AnimalModal animal={viewingAnimal} bind:open={showAnimalModal} mode={modalMode} allAnimals={data.animals} />
