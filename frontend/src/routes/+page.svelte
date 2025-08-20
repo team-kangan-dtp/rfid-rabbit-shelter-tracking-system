@@ -15,6 +15,7 @@
     ShiftStatus,
     RfidLog,
   } from "../ambient";
+  import PageHeader from "$lib/components/page-header.svelte";
 
   export let data: PageData;
 
@@ -126,12 +127,11 @@
   }
 </script>
 
-<main>
-  <h1 class="text-2xl font-bold">Animal Shelter Dashboard</h1>
-  <p class="text-gray-600">
-    Welcome to the animal shelter dashboard. Here you can find information about
-    the animals and their health checks.
-  </p>
+<main class="p-6 pb-0">
+  <PageHeader
+    title="Dashboard"
+    description="Overview of shelter operations and animal status."
+  />
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
     <Card.Root class="w-full max-w-sm">

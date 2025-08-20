@@ -15,6 +15,10 @@ export type RfidLog = {
     name: string;
     species: string;
   };
+  animal_note?: {
+    id: string;
+    note_type: string;
+  }; // Optional field for animal notes
 };
 
 export const columns: ColumnDef<RfidLog>[] = [
@@ -65,8 +69,20 @@ export const columns: ColumnDef<RfidLog>[] = [
     },
   },
   {
-    accessorKey: "id",
-    header: "ID",
+    accessorKey: "animal_note",
+    header: "Interaction Type",
     enableSorting: true,
+    sortingFn: (rowA, rowB, columnId) => {
+      const noteA = rowA.getValue(columnId) as RfidLog["animal_note"];
+      const noteB = rowB.getValue(columnId) as RfidLog["animal_note"];
+      if (!noteA && !noteB) return 0;
+      if (!noteA) return 1;
+      if (!noteB) return -1;
+      return noteA.note_type.localeCompare(noteB.note_type);
+    },
+    cell: ({ row }) => {
+      const note = row.getValue("animal_note") as RfidLog["animal_note"];
+      return note?.note_type || "N/A";
+    },
   },
 ];
