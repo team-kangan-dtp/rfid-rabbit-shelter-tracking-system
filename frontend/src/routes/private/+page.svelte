@@ -15,9 +15,13 @@
   import FileText from "@lucide/svelte/icons/file-text";
   import PageHeader from "$lib/components/page-header.svelte";
   import { ProfileInfoCard, ProfileHeroCard } from "$lib/components/profile";
+  import { ProfileEditModal } from "$lib/components/profile";
 
   let { data } = $props();
-  let { supabase, user, currentUser } = $derived(data);
+  let { supabase, currentUser } = $derived(data);
+
+  // Modal state management
+  let profileEditModalOpen = $state(false);
 
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -36,27 +40,6 @@
       month: "long",
       day: "numeric",
     });
-  };
-
-  type User = {
-    id: string;
-    email: string;
-    firstName: string | null;
-    lastName: string | null;
-    phone: string | null;
-    dateOfBirth: string | null;
-    addressLine: string | null;
-    city: string | null;
-    state: string | null;
-    postalCode: string | null;
-    rfidTag: string | null;
-    volunteerStartDate: string | null;
-    volunteerEndDate: string | null;
-    volunteerNotes: string | null;
-    isAdmin: boolean;
-    isActiveVolunteer: boolean;
-    createdAt: string | null;
-    updatedAt: string | null;
   };
 </script>
 
@@ -89,6 +72,9 @@
           variant: "outline",
           label: "Edit Profile",
           icon: Edit,
+          onclick: () => {
+            profileEditModalOpen = true;
+          },
         },
         {
           variant: "outline",
@@ -132,7 +118,15 @@
           {
             icon: MapPin,
             label: "Address",
-            value: `${currentUser.address_line}, ${currentUser.city}, ${currentUser.state} ${currentUser.postal_code}`,
+            value:
+              [
+                currentUser.address_line,
+                currentUser.city,
+                currentUser.state,
+                currentUser.postal_code,
+              ]
+                .filter(Boolean)
+                .join(", ") || null,
             fallback: "Address not provided",
           },
         ]}
@@ -174,3 +168,24 @@
     </div>
   {/if}
 </div>
+
+<!-- Profile Edit Modal -->
+{#if currentUser}
+  <ProfileEditModal
+    bind:open={profileEditModalOpen}
+    id={currentUser.id}
+    email={currentUser.email}
+    firstName={currentUser.first_name || ""}
+    lastName={currentUser.last_name || ""}
+    phone={currentUser.phone || ""}
+    dateOfBirth={currentUser.date_of_birth || ""}
+    addressLine={currentUser.address_line || ""}
+    city={currentUser.city || ""}
+    state={currentUser.state || ""}
+    postalCode={currentUser.postal_code || ""}
+    volunteerStartDate={currentUser.volunteer_start_date || ""}
+    isActiveVolunteer={currentUser.is_active_volunteer || false}
+    rfidTag={currentUser.rfid_tag || ""}
+    notes={currentUser.volunteer_notes || ""}
+  />
+{/if}
