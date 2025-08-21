@@ -10,6 +10,7 @@
 >
   <div class="flex w-full max-w-sm flex-col gap-6">
     <!-- Logo/Brand with Rabbit Icon -->
+    <!-- svelte-ignore a11y_missing_attribute -->
     <a class="flex items-center gap-2 self-center font-medium">
       <div
         class="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md"
