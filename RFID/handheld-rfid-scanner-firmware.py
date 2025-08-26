@@ -180,15 +180,16 @@ def supabase_request(method, url, payload=None):
 # Function to authenticate user by RFID tag
 def authenticate_user(rfid_str):
 	"""Authenticate user by RFID tag. Returns (user_id, rfid_str) on success, else (None, None)."""
-	url = f"{SUPABASE_URL}/rest/v1/user?rfid_tag=eq.{rfid_str}&select=id"
+	url = f"{SUPABASE_URL}/rest/v1/user?rfid_tag=eq.{rfid_str}&select=id,first_name"
 	data = supabase_request("GET", url)
 	if data and isinstance(data, list) and len(data) > 0:
 		user_id = data[0].get('id')
-		print(f"Found user ID: {user_id}")
-		return user_id, rfid_str
+		first_name = data[0].get('first_name', 'there')
+		print(f"Found user ID: {user_id}, Name: {first_name}")
+		return user_id, first_name, rfid_str
 	print("No matching user found.")
 	display_message("User not found", duration=2)
-	return None, None
+	return None, None, None
 
 # Function to query Supabase animal table for matching RFID
 def get_animal_by_rfid(rfid_str):
@@ -213,12 +214,13 @@ def get_animal_by_rfid(rfid_str):
 	return None
 
 # Function to log RFID scan in Supabase
-def log_scan(animal_id):
+def log_scan(animal_id, rfid_tag = None):
 	"""Insert a new row in rfid_scan_log"""
 	global user_id
 	url = f"{SUPABASE_URL}/rest/v1/rfid_log"
 	payload = {
 		"animal_id": animal_id,
+		"rfid_tag": rfid_tag,
 		"user_id": user_id,
 		"scan_time": get_iso_timestamp()
 	}
@@ -276,7 +278,7 @@ def main_loop():
 				
 				# If user is not authenticated, attempt to authenticate
 				if not user_authenticated:
-					auth_user_id, auth_user_rfid = authenticate_user(rfid_str)
+					auth_user_id, auth_user_first_name, auth_user_rfid = authenticate_user(rfid_str)
 
 					# If authentication is successful, set user_id and user_authenticated
 					if auth_user_id:
@@ -287,7 +289,7 @@ def main_loop():
 						print("User authenticated successfully.")
 						set_leds(green=True)
 						play_sound(500, 500)  # Play success sound
-						display_message("Authenticated", MSG_READY_TO_SCAN, duration=2)
+						display_message(f"Hi {auth_user_first_name}", MSG_READY_TO_SCAN, duration=2)
 					else:
 						print("User authentication failed.")
 						set_leds(red=True)
@@ -304,6 +306,7 @@ def main_loop():
 					# Check if the scanned tag is the user's own tag again (logout)
 					if rfid_str == user_rfid:
 						print("Same user tag scanned. Logging out.")
+						set_leds(red=False, green=False)
 						display_message("Logging out...", duration=1)
 						user_authenticated = False
 						user_id = ""
@@ -325,8 +328,10 @@ def main_loop():
 						)
 					else:
 						# Explicitly handle case where animal is not found
-						display_message("Invalid animal tag", duration=2)
-					
+						display_message("Animal tag not found, logging empty scan", duration=2)
+						log_scan(None, rfid_tag=rfid_str)
+
+
 					# Reset for next scan
 					set_leds(green=True)
 					print("\nScan an animal RFID tag...")
