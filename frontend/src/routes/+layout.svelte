@@ -10,7 +10,7 @@
   import { page } from "$app/state";
   // import app sidebar from componenents/app-sidebar to display
   import MobileBottomTabs from "$lib/components/mobile-bottom-tabs.svelte";
-  import { navItems } from "$lib/config/navigation.js";
+  import RFIDScanModal from "$lib/components/RFIDScanModal.svelte";
 
   type LogEvent = {
     [key: string]: any;
@@ -26,6 +26,18 @@
   let dialogOpen = $state(false);
   let currentScanData = $state<LogEvent | null>(null);
   let animalDetails = $state<any>(null);
+  let rfidTag: string | null = $state(null);
+
+  // Function to close the modal and reset state
+  function closeModal() {
+    dialogOpen = false;
+    // Reset the modal state after a brief delay to allow for smooth closing animation
+    setTimeout(() => {
+      currentScanData = null;
+      animalDetails = null;
+      rfidTag = null;
+    }, 150);
+  }
 
   let { data, children } = $props();
   let { session, supabase } = $derived(data);
@@ -78,12 +90,19 @@
           event: "INSERT",
           schema: "public",
           table: "rfid_log",
-          // filter: `user_id=eq.${currentUserId}`,
+          filter: `user_id=eq.${currentUserId}`,
         },
         async (payload) => {
           console.log("New log entry:", payload);
           console.log("Payload structure:", JSON.stringify(payload, null, 2));
           logEvents = [payload.new, ...logEvents];
+
+          // Reset modal state first to ensure fresh data
+          currentScanData = null;
+          animalDetails = null;
+          rfidTag = null;
+
+          // Set new scan data
           currentScanData = payload.new;
 
           // Fetch animal details if animal_id exists
@@ -93,7 +112,6 @@
 
             // Check authentication status
             console.log("Session from server:", session);
-            console.log("User from server:", data.user);
             console.log("User authenticated:", !!session);
 
             const {
@@ -130,6 +148,8 @@
                   animalDetails
                 );
                 console.log("Dialog should show animal data for:", animal.name);
+
+                dialogOpen = true;
               } else {
                 console.error("Error fetching animal details:", error);
                 animalDetails = null;
@@ -137,11 +157,26 @@
               }
             }
           } else {
-            console.log("No animal_id in payload, this is likely a user scan");
-            animalDetails = null;
-          }
+            console.log(
+              "No animal_id in payload, offer to assign this rfid tag to animal"
+            );
+            // Try to fetch animal details
+            try {
+              const { data: animals, error } = await supabase
+                .from("animal")
+                .select("*");
 
-          dialogOpen = true;
+              console.log("Supabase response - data:", animals);
+
+              animalDetails = animals;
+              rfidTag = payload.new.rfid_tag || null;
+            } catch (error) {
+              console.error("Error fetching animal details:", error);
+              animalDetails = null;
+            }
+
+            dialogOpen = true;
+          }
         }
       )
       .subscribe((status) => {
@@ -214,97 +249,12 @@
     </Sidebar.Provider>
   </div>
 
-  <Dialog.Root bind:open={dialogOpen}>
-    <Dialog.Content class="max-w-md">
-      <Dialog.Header>
-        <Dialog.Title>RFID Scan Detected</Dialog.Title>
-        <Dialog.Description>
-          {#if animalDetails}
-            Animal scan detected for {animalDetails.name}
-          {:else}
-            A new RFID scan has been detected in the system.
-          {/if}
-        </Dialog.Description>
-      </Dialog.Header>
-
-      <!-- Debug info -->
-      <div class="text-xs text-gray-500 p-2 bg-gray-100 rounded">
-        <p>Debug: animalDetails = {JSON.stringify(animalDetails)}</p>
-        <p>Debug: animalDetails exists = {!!animalDetails}</p>
-        <p>Debug: currentScanData = {JSON.stringify(currentScanData)}</p>
-      </div>
-
-      {#if animalDetails}
-        <div class="grid gap-3 py-4">
-          <div class="grid grid-cols-3 items-center gap-4">
-            <span class="font-medium">Name:</span>
-            <span class="col-span-2">{animalDetails.name}</span>
-          </div>
-          <div class="grid grid-cols-3 items-center gap-4">
-            <span class="font-medium">Species:</span>
-            <span class="col-span-2">{animalDetails.species}</span>
-          </div>
-          <div class="grid grid-cols-3 items-center gap-4">
-            <span class="font-medium">Breed:</span>
-            <span class="col-span-2">{animalDetails.breed || "N/A"}</span>
-          </div>
-          <div class="grid grid-cols-3 items-center gap-4">
-            <span class="font-medium">Fur Colour:</span>
-            <span class="col-span-2">{animalDetails.fur_colour || "N/A"}</span>
-          </div>
-          <div class="grid grid-cols-3 items-center gap-4">
-            <span class="font-medium">Weight:</span>
-            <span class="col-span-2"
-              >{animalDetails.weight_kg
-                ? `${animalDetails.weight_kg} kg`
-                : "N/A"}</span
-            >
-          </div>
-          <div class="grid grid-cols-3 items-center gap-4">
-            <span class="font-medium">Date of Birth:</span>
-            <span class="col-span-2"
-              >{animalDetails.date_of_birth
-                ? new Date(animalDetails.date_of_birth).toLocaleDateString()
-                : "N/A"}</span
-            >
-          </div>
-          <div class="grid grid-cols-3 items-center gap-4">
-            <span class="font-medium">Arrival Date:</span>
-            <span class="col-span-2"
-              >{new Date(animalDetails.arrival_date).toLocaleDateString()}</span
-            >
-          </div>
-          <div class="grid grid-cols-3 items-center gap-4">
-            <span class="font-medium">Status:</span>
-            <span class="col-span-2">{animalDetails.adoption_status}</span>
-          </div>
-          {#if animalDetails.special_needs}
-            <div class="grid grid-cols-3 items-center gap-4">
-              <span class="font-medium">Special Needs:</span>
-              <span class="col-span-2">{animalDetails.special_needs}</span>
-            </div>
-          {/if}
-        </div>
-      {:else if currentScanData}
-        <div class="grid gap-3 py-4">
-          <div class="grid grid-cols-3 items-center gap-4">
-            <span class="font-medium">Scan Time:</span>
-            <span class="col-span-2"
-              >{new Date(currentScanData.scan_time).toLocaleString()}</span
-            >
-          </div>
-          <div class="grid grid-cols-3 items-center gap-4">
-            <span class="font-medium">User Scan:</span>
-            <span class="col-span-2"
-              >{currentScanData.user_id ? "Yes" : "No"}</span
-            >
-          </div>
-        </div>
-      {/if}
-
-      <Dialog.Footer>
-        <Dialog.Close>Close</Dialog.Close>
-      </Dialog.Footer>
-    </Dialog.Content>
-  </Dialog.Root>
+  <RFIDScanModal
+    userID={currentUserId}
+    animalData={animalDetails}
+    {rfidTag}
+    scanData={currentScanData}
+    {dialogOpen}
+    onClose={closeModal}
+  />
 {/if}

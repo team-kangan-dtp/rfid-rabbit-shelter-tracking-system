@@ -8,7 +8,7 @@ import { supabase } from "$lib/supabaseClient";
 export const load: PageServerLoad = async ({ parent }) => {
   // Get parent data (includes session, user, userProfile)
   const parentData = await parent();
-  
+
   // Fetch all animals from the database using the direct supabase client
   const { data, error } = await supabase.from("animal").select();
 
@@ -24,14 +24,64 @@ export const load: PageServerLoad = async ({ parent }) => {
 
   console.log("✅ Animal data from database:", data);
 
+  // Parse any JSON-serialized fields (e.g., arrays/objects stored as strings) so consumers get real arrays/objects
+  const parsedAnimals = (data ?? []).map((row: any) => {
+    const parsedRow: Record<string, any> = { ...row };
+    for (const key of Object.keys(parsedRow)) {
+      const val = parsedRow[key];
+      if (typeof val === "string") {
+        const trimmed = val.trim();
+        if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+          try {
+            parsedRow[key] = JSON.parse(trimmed);
+          } catch (e) {
+            // keep original string if JSON.parse fails
+          }
+        }
+      }
+    }
+    return parsedRow;
+  });
+
   return {
     ...parentData,
-    animals: data ?? [],
+    animals: parsedAnimals,
   };
 };
 
 // Actions without authentication checks
 export const actions: Actions = {
+  // GET - Fetch all animals
+  get: async ({ request }) => {
+    try {
+      const formData = await request.formData();
+      console.log("📝 Form data received:");
+      for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}: ${value}`);
+      }
+      const limitValue = formData.get("limit");
+      const dbFieldsRaw = formData.get("dbFields");
+      const dbFields =
+        typeof dbFieldsRaw === "string" && dbFieldsRaw.trim() !== ""
+          ? dbFieldsRaw
+          : "*";
+      const limit = limitValue ? parseInt(limitValue as string, 10) : undefined;
+
+      const query = supabase.from("animal").select(dbFields);
+      const { data, error } = limit ? await query.limit(limit) : await query;
+
+      if (error) {
+        console.error("❌ Get error:", error);
+        return fail(404, { error: error.message });
+      }
+
+      return { animals: data ?? [] };
+    } catch (err) {
+      console.error("❌ Unexpected error in get action:", err);
+      return fail(500, { error: "Unexpected error occurred" });
+    }
+  },
+
   // CREATE - Add a new animal
   create: async ({ request }) => {
     console.log("🚀🚀🚀 CREATE ACTION CALLED! 🚀🚀🚀");
@@ -135,5 +185,74 @@ export const actions: Actions = {
     }
 
     return { success: true };
+  },
+
+  // PARTIAL UPDATE - only modify provided fields (prevents nulling omitted data)
+  put: async ({ request }) => {
+    console.log("🧩 PARTIAL PUT ACTION CALLED");
+    const form = await request.formData();
+    const id = form.get("id") as string;
+    if (!id) return fail(400, { error: "Missing id" });
+
+    const allowed = [
+      "name",
+      "species",
+      "breed",
+      "date_of_birth",
+      "fur_colour",
+      "weight_kg",
+      "arrival_date",
+      "neutered",
+      "adoption_status",
+      "bonded_with",
+      "rfid_tag",
+      "special_needs",
+      "description",
+    ] as const;
+
+    const updatePayload: Record<string, any> = {};
+
+    for (const key of allowed) {
+      if (form.has(key)) {
+        let value: any = form.get(key);
+        // Normalize empty strings to null for optional fields (except name/species/adoption_status which may be required elsewhere)
+        if (value === "") {
+          if (
+            [
+              "breed",
+              "date_of_birth",
+              "fur_colour",
+              "bonded_with",
+              "rfid_tag",
+              "special_needs",
+              "description",
+              "weight_kg",
+            ].includes(key)
+          )
+            value = null;
+        }
+        if (key === "weight_kg" && value) value = parseFloat(value as string);
+        if (key === "neutered") value = value === "on" || value === "true";
+        updatePayload[key] = value;
+      }
+    }
+
+    if (Object.keys(updatePayload).length === 0) {
+      return fail(400, { error: "No fields provided to update" });
+    }
+
+    console.log("🔧 Partial update payload:", updatePayload);
+
+    const { error } = await supabase
+      .from("animal")
+      .update(updatePayload)
+      .eq("id", id);
+
+    if (error) {
+      console.error("Partial update error:", error);
+      return fail(400, { error: error.message });
+    }
+
+    return { success: true, updated: Object.keys(updatePayload) };
   },
 };
