@@ -12,7 +12,7 @@ export const load = async ({
   if (user?.id) {
     const { data, error } = await supabase
       .from("user")
-      .select("id, email, first_name, last_name, phone")
+      .select("id, email, first_name, last_name, phone, rfid_tag, volunteer_start_date")
       .eq("id", user.id)
       .single();
     

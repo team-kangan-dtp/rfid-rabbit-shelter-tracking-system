@@ -58,6 +58,7 @@ declare module '$env/static/private' {
 	export const VSCODE_PROFILE_INITIALIZED: string;
 	export const npm_execpath: string;
 	export const WARP_USE_SSH_WRAPPER: string;
+	export const PYDEVD_DISABLE_FILE_VALIDATION: string;
 	export const PATH: string;
 	export const npm_package_json: string;
 	export const npm_config_engine_strict: string;
@@ -72,12 +73,14 @@ declare module '$env/static/private' {
 	export const OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: string;
 	export const npm_package_name: string;
 	export const LANG: string;
+	export const BUNDLED_DEBUGPY_PATH: string;
 	export const npm_config_npm_version: string;
 	export const XPC_FLAGS: string;
 	export const VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
 	export const npm_config_node_gyp: string;
 	export const npm_package_version: string;
 	export const XPC_SERVICE_NAME: string;
+	export const VSCODE_DEBUGPY_ADAPTER_ENDPOINTS: string;
 	export const VSCODE_INJECTION: string;
 	export const HOME: string;
 	export const PYENV_SHELL: string;
@@ -167,6 +170,7 @@ declare module '$env/dynamic/private' {
 		VSCODE_PROFILE_INITIALIZED: string;
 		npm_execpath: string;
 		WARP_USE_SSH_WRAPPER: string;
+		PYDEVD_DISABLE_FILE_VALIDATION: string;
 		PATH: string;
 		npm_package_json: string;
 		npm_config_engine_strict: string;
@@ -181,12 +185,14 @@ declare module '$env/dynamic/private' {
 		OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: string;
 		npm_package_name: string;
 		LANG: string;
+		BUNDLED_DEBUGPY_PATH: string;
 		npm_config_npm_version: string;
 		XPC_FLAGS: string;
 		VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
 		npm_config_node_gyp: string;
 		npm_package_version: string;
 		XPC_SERVICE_NAME: string;
+		VSCODE_DEBUGPY_ADAPTER_ENDPOINTS: string;
 		VSCODE_INJECTION: string;
 		HOME: string;
 		PYENV_SHELL: string;
