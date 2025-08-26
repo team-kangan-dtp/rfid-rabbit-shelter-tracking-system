@@ -14,7 +14,7 @@
 <!-- Animals List -->
 <div class="mt-6">
   <!-- Table for md and larger screens -->
-  <div class="hidden md:block">
+  <div class="hidden md:block overflow-x-auto">
     <AnimalTable 
       data={animals} 
       onView={onView}
@@ -23,9 +23,9 @@
     />
   </div>
 
-  <!-- Cards for sm screens only -->
-  <div class="md:hidden">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <!-- Cards for small screens -->
+  <div class="block md:hidden">
+    <div class="grid grid-cols-1 gap-4">
       {#each animals as animal (animal.id)}
         <Card.Root>
           <Card.Content class="p-4">

@@ -10,14 +10,14 @@
 </script>
 
 <div class="w-full rounded-md border" role="region" aria-label="Animals table">
-  <Table.Root class="w-full" role="table">
+  <Table.Root class="w-full min-w-[700px]" role="table">
     <Table.Header>
       <Table.Row>
-        <Table.Head class="w-[200px]">Name</Table.Head>
-        <Table.Head class="w-[150px]">Species</Table.Head>
-        <Table.Head class="w-[150px]">Date of Birth</Table.Head>
-        <Table.Head class="w-[200px]">Adoption Status</Table.Head>
-        <Table.Head class="w-[200px]">Actions</Table.Head>
+        <Table.Head class="min-w-[150px]">Name</Table.Head>
+        <Table.Head class="min-w-[120px]">Species</Table.Head>
+        <Table.Head class="min-w-[130px]">Date of Birth</Table.Head>
+        <Table.Head class="min-w-[150px]">Adoption Status</Table.Head>
+        <Table.Head class="min-w-[150px]">Actions</Table.Head>
       </Table.Row>
     </Table.Header>
     <Table.Body>

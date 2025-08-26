@@ -3,7 +3,7 @@
   import AnimalList from "$lib/components/AnimalList.svelte";
   import AnimalModal from "$lib/components/AnimalModal.svelte";
   import AnimalCreateForm from "$lib/components/AnimalCreateForm.svelte";
-  import * as Sheet from "$lib/components/ui/sheet/index.js";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import type { Animal, AnimalModalMode } from "$lib/types";
 
@@ -86,7 +86,6 @@
   onCreateClick={handleCreate}
 />
 
-
 <AnimalList
   animals={filteredAnimals}
   onView={handleView}
@@ -94,23 +93,28 @@
   onDelete={handleDelete}
 />
 
-<!-- Create New Animal Sheet -->
-<Sheet.Root bind:open={showCreateForm}>
-  <Sheet.Content class="sm:max-w-lg overflow-y-auto">
-    <Sheet.Header>
-      <Sheet.Title>Add New Animal</Sheet.Title>
-    </Sheet.Header>
+<!-- Create New Animal Dialog -->
+<Dialog.Root bind:open={showCreateForm}>
+  <Dialog.Content class="max-w-2xl max-h-[90vh] flex flex-col">
+    <Dialog.Header class="flex-shrink-0">
+      <Dialog.Title>Add New Animal</Dialog.Title>
+      <Dialog.Description>
+        Fill in the details below to add a new animal to the shelter.
+      </Dialog.Description>
+    </Dialog.Header>
 
-    <AnimalCreateForm allAnimals={data} onSubmit={handleFormSubmit} />
+    <div class="flex-1 overflow-y-auto px-6">
+      <AnimalCreateForm allAnimals={data} onSubmit={handleFormSubmit} />
+    </div>
 
-    <div class="flex justify-end space-x-2 pt-4">
+    <Dialog.Footer class="flex-shrink-0">
       <Button type="button" variant="outline" onclick={handleCancel}>
         Cancel
       </Button>
       <Button type="submit" form="create-animal-form">Create Animal</Button>
-    </div>
-  </Sheet.Content>
-</Sheet.Root>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
 
 <!-- Animal Modal -->
 <AnimalModal animal={viewingAnimal} bind:open={showAnimalModal} mode={modalMode} allAnimals={data} />
