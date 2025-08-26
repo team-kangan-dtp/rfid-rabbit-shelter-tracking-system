@@ -26,7 +26,7 @@ export const load: PageServerLoad = async () => {
     };
   }
 
-  console.log("✅ RFID log data from database:", data);
+  // console.log("✅ RFID log data from database:", data);
 
   return {
     rfid_logs: data ?? [],

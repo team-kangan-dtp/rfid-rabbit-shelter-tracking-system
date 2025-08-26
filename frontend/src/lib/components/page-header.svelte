@@ -14,7 +14,7 @@
 </script>
 
 <!-- Page heading -->
-<div class="mb-5 flex items-center justify-between">
+<div class="mb-2 flex items-center justify-between">
   <div class="space-y-1">
     <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
       {title}
