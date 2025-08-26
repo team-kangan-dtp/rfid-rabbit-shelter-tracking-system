@@ -67,7 +67,7 @@
   <Sidebar.Header>
     <div class="flex items-center gap-2">
       <div
-        class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-10 items-center justify-center rounded-lg"
+        class="bg-primary text-primary-foreground flex aspect-square size-10 items-center justify-center rounded-lg"
       >
         <Rabbit class="size-6" />
       </div>
@@ -84,7 +84,7 @@
           {#each navItems as item (item.title)}
             <Sidebar.MenuItem>
               <Sidebar.MenuButton
-                class="text-lg border border-sidebar-primary/25 {currentActiveItem ===
+                class="text-lg border border-sidebar-border {currentActiveItem ===
                 item.title
                   ? 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground'
                   : ''}"
@@ -138,7 +138,7 @@
       <!-- User Information -->
       <Sidebar.MenuItem>
         <Sidebar.MenuButton
-          class="border border-sidebar-primary/20 cursor-pointer {currentActiveItem ===
+          class="border border-sidebar-border cursor-pointer {currentActiveItem ===
           'User Profile'
             ? 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground'
             : ''}"
@@ -162,7 +162,7 @@
       <!-- Sign out -->
       <Sidebar.MenuItem>
         <Sidebar.MenuButton
-          class="border border-sidebar-primary/20 cursor-pointer"
+          class="border border-sidebar-border cursor-pointer"
           onclick={handleSignOut}
         >
           <LogOut />
@@ -174,7 +174,7 @@
       <Sidebar.MenuItem>
         <div class="flex items-center gap-2">
           <div
-            class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-9 items-center justify-center rounded-lg"
+            class="bg-primary text-primary-foreground flex aspect-square size-9 items-center justify-center rounded-lg"
           >
             <User class="size-6" />
           </div>

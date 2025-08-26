@@ -105,7 +105,7 @@
             // Check if user is authenticated before querying
             if (!session && !user) {
               console.log(
-                "User not authenticated - cannot fetch animal details"
+                "User not authenticated - cannot fetch animal details",
               );
               animalDetails = {
                 name: "Authentication Required",
@@ -127,7 +127,7 @@
                 console.log("Animal details set:", animal);
                 console.log(
                   "animalDetails state after setting:",
-                  animalDetails
+                  animalDetails,
                 );
                 console.log("Dialog should show animal data for:", animal.name);
               } else {
@@ -142,7 +142,7 @@
           }
 
           dialogOpen = true;
-        }
+        },
       )
       .subscribe((status) => {
         console.log("Subscription status:", status);
@@ -177,8 +177,8 @@
     <Sidebar.Provider>
       <AppSidebar />
       <Sidebar.Inset class="flex flex-col flex-1">
-        <header class="flex h-16 shrink-0 items-center gap-2 px-4">
-          <Sidebar.Trigger class="-ml-1 hidden md:block" />
+        <header class="h-12 shrink-0 items-center gap-2 px-4 hidden md:flex">
+          <Sidebar.Trigger class="-ml-1" />
           <Breadcrumb.Root>
             <Breadcrumb.List>
               {#each breadcrumbs as crumb, index (crumb.href)}
@@ -203,15 +203,13 @@
         <div class="flex flex-1 flex-col gap-4 p-4 pt-0 pb-20 md:pb-4">
           {@render children?.()}
         </div>
-
-        <!-- Mobile Bottom Tabs - moved inside Sidebar.Inset -->
-        <div
-          class="fixed bottom-0 left-0 right-0 p-4 bg-background border-t md:hidden z-50"
-        >
-          <MobileBottomTabs />
-        </div>
       </Sidebar.Inset>
     </Sidebar.Provider>
+
+    <!-- Mobile Bottom Tabs - moved outside Sidebar.Provider to prevent layout shifts -->
+    <div class="fixed bottom-0 left-0 right-0 md:hidden z-50">
+      <MobileBottomTabs />
+    </div>
   </div>
 
   <Dialog.Root bind:open={dialogOpen}>

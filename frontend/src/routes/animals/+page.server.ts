@@ -22,8 +22,6 @@ export const load: PageServerLoad = async ({ parent }) => {
     };
   }
 
-  console.log("✅ Animal data from database:", data);
-
   return {
     ...parentData,
     animals: data ?? [],

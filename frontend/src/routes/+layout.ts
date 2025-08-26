@@ -35,8 +35,8 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
 
   // 🎯 FIXED: Use server-provided data instead of making API calls
   // This prevents hydration mismatch and flickering
-  console.log("🔍 Using server data - User:", data.user);
-  console.log("🔍 Using server data - Session:", data.session);
+  // console.log("🔍 Using server data - User:", data.user);
+  // console.log("🔍 Using server data - Session:", data.session);
 
   return {
     session: data.session, // ← Use server data

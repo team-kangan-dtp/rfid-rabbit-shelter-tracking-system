@@ -1,16 +1,27 @@
 <script lang="ts">
-  import { invalidate, goto } from "$app/navigation";
-  import type { EventHandler } from "svelte/elements";
-  import * as Card from "$lib/components/ui/card/index.js";
+  import { goto } from "$app/navigation";
   import type { PageData } from "./$types";
-  import { Root } from "$lib/components/ui/button";
   import { toggleMode } from "mode-watcher";
-  // import { SunMoon } from "@lucide/svelte/icons/sun-moon";
-  import { Button } from "$lib/components/ui/button";
   import SunMoon from "@lucide/svelte/icons/sun-moon";
+  import User from "@lucide/svelte/icons/user";
+  import Phone from "@lucide/svelte/icons/phone";
+  import Calendar from "@lucide/svelte/icons/calendar";
+  import MapPin from "@lucide/svelte/icons/map-pin";
+  import Shield from "@lucide/svelte/icons/shield";
+  import CreditCard from "@lucide/svelte/icons/credit-card";
+  import Clock from "@lucide/svelte/icons/clock";
+  import Edit from "@lucide/svelte/icons/edit";
+  import LogOut from "@lucide/svelte/icons/log-out";
+  import FileText from "@lucide/svelte/icons/file-text";
+  import PageHeader from "$lib/components/page-header.svelte";
+  import { ProfileInfoCard, ProfileHeroCard } from "$lib/components/profile";
+  import { ProfileEditModal } from "$lib/components/profile";
 
   let { data } = $props();
-  let { supabase, user, currentUser } = $derived(data);
+  let { supabase, currentUser } = $derived(data);
+
+  // Modal state management
+  let profileEditModalOpen = $state(false);
 
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -21,174 +32,160 @@
     }
   };
 
-  type User = {
-    id: string;
-    email: string;
-    firstName: string | null;
-    lastName: string | null;
-    phone: string | null;
-    dateOfBirth: string | null;
-    addressLine: string | null;
-    city: string | null;
-    state: string | null;
-    postalCode: string | null;
-    rfidTag: string | null;
-    volunteerStartDate: string | null;
-    volunteerEndDate: string | null;
-    volunteerNotes: string | null;
-    isAdmin: boolean;
-    isActiveVolunteer: boolean;
-    createdAt: string | null;
-    updatedAt: string | null;
+  // Helper function to format dates
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 </script>
 
-<div class="p-6">
-  <div class="flex items-center justify-between mb-6">
-    <div class="space-y-1">
-      <h1
-        class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl"
-      >
-        User Profile
-      </h1>
-      <p class="text-xl text-muted-foreground">
-        Manage your profile information and settings
-      </p>
+<div class="px-6 pt-6 pb-6">
+  <PageHeader
+    title="User Profile"
+    description="Manage your profile information and settings"
+  />
+
+  {#if currentUser}
+    <!-- TODO(human): Replace this entire hero card section with ProfileHeroCard component -->
+    <ProfileHeroCard
+      firstName={currentUser.first_name}
+      lastName={currentUser.last_name}
+      email={currentUser.email}
+      statusBadges={[
+        currentUser.is_admin && {
+          variant: "admin",
+          label: "Administrator",
+          icon: Shield,
+        },
+        currentUser.is_active_volunteer && {
+          variant: "volunteer",
+          label: "Active Volunteer",
+          icon: User,
+        },
+      ].filter(Boolean)}
+      actionButtons={[
+        {
+          variant: "outline",
+          label: "Edit Profile",
+          icon: Edit,
+          onclick: () => {
+            profileEditModalOpen = true;
+          },
+        },
+        {
+          variant: "outline",
+          label: "Toggle Mode",
+          icon: SunMoon,
+          onclick: toggleMode,
+        },
+        {
+          variant: "outline",
+          label: "Logout",
+          icon: LogOut,
+          onclick: logout,
+        },
+      ]}
+    />
+
+    <!-- Information Cards Layout -->
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <!-- Personal Information Card -->
+      <ProfileInfoCard
+        title="Personal Information"
+        description="Your personal details and contact information"
+        fields={[
+          {
+            icon: User,
+            label: "Email",
+            value: currentUser.email,
+            fallback: "Email not provided",
+          },
+          {
+            icon: Phone,
+            label: "Phone Number",
+            value: currentUser.phone,
+            fallback: "Phone number not provided",
+          },
+          {
+            icon: Calendar,
+            label: "Date of Birth",
+            value: formatDate(currentUser.date_of_birth),
+          },
+          {
+            icon: MapPin,
+            label: "Address",
+            value:
+              [
+                currentUser.address_line,
+                currentUser.city,
+                currentUser.state,
+                currentUser.postal_code,
+              ]
+                .filter(Boolean)
+                .join(", ") || null,
+            fallback: "Address not provided",
+          },
+        ]}
+      />
+
+      <!-- Volunteer Information Card -->
+      <ProfileInfoCard
+        title="Volunteer Information"
+        description="Your volunteer details and access information"
+        fields={[
+          {
+            icon: Clock,
+            label: "Volunteer Start Date",
+            value: formatDate(currentUser.volunteer_start_date),
+            fallback: "Start date not recorded",
+          },
+          {
+            icon: CreditCard,
+            label: "Staff Card No (RFID)",
+            value: currentUser.rfid_tag,
+            fallback: "RFID not assigned",
+          },
+        ]}
+      />
+
+      <!-- Volunteer Card -->
+      <ProfileInfoCard
+        title="Volunteer Notes"
+        description="Information, preferences, and notes about you as a volunteer"
+        fields={[
+          {
+            icon: FileText,
+            label: "Volunteer Notes",
+            value: currentUser.volunteer_notes,
+            fallback: "No notes recorded",
+          },
+        ]}
+      />
     </div>
-  </div>
-
-  <header class="flex gap-4 mb-6">
-    <Button>
-      <a href="/">Dashboard</a>
-    </Button>
-    <Button class="cursor-pointer" onclick={logout}>Logout</Button>
-    <Button onclick={toggleMode}><SunMoon /> Toggle mode</Button>
-  </header>
-
-  <Card.Root class="w-full max-w-sm">
-    <Card.Header>
-      <Card.Title>Current User</Card.Title>
-      <Card.Description>{currentUser?.email}</Card.Description>
-    </Card.Header>
-    <Card.Content>
-      {#if currentUser}
-        <div class="space-y-4">
-          <!-- Name -->
-          <div>
-            <Card.Title>Name</Card.Title>
-            <Card.Description>
-              {currentUser.first_name || ""}
-              {currentUser.last_name || ""}
-            </Card.Description>
-          </div>
-
-          <!-- Phone -->
-          <div>
-            <Card.Title>Phone</Card.Title>
-            <Card.Description
-              >{currentUser.phone || "Not provided"}</Card.Description
-            >
-          </div>
-
-          <!-- Date of Birth -->
-          <div>
-            <Card.Title>Date of Birth</Card.Title>
-            <Card.Description
-              >{currentUser.date_of_birth || "Not provided"}</Card.Description
-            >
-          </div>
-
-          <!-- Address -->
-          <div>
-            <Card.Title>Address</Card.Title>
-            <Card.Description
-              >{currentUser.address_line || "Not provided"}</Card.Description
-            >
-          </div>
-
-          <!-- City -->
-          <div>
-            <Card.Title>City</Card.Title>
-            <Card.Description
-              >{currentUser.city || "Not provided"}</Card.Description
-            >
-          </div>
-
-          <!-- State -->
-          <div>
-            <Card.Title>State</Card.Title>
-            <Card.Description
-              >{currentUser.state || "Not provided"}</Card.Description
-            >
-          </div>
-
-          <!-- Postal Code -->
-          <div>
-            <Card.Title>Postal Code</Card.Title>
-            <Card.Description
-              >{currentUser.postal_code || "Not provided"}</Card.Description
-            >
-          </div>
-
-          <!-- Status -->
-          {#if currentUser.is_active_volunteer}
-            <div>
-              <Card.Title>Status</Card.Title>
-              <Card.Description>Active Volunteer</Card.Description>
-            </div>
-          {/if}
-
-          <!-- Volunteer Since -->
-          {#if currentUser.is_active_volunteer}
-            <div>
-              <Card.Title>Volunteer Since</Card.Title>
-              <Card.Description
-                >{currentUser.volunteer_start_date ||
-                  "Not provided"}</Card.Description
-              >
-            </div>
-          {/if}
-
-          <!-- Role -->
-          {#if currentUser.is_admin}
-            <div>
-              <Card.Title>Role</Card.Title>
-              <Card.Description>Administrator</Card.Description>
-            </div>
-          {/if}
-
-          <!-- RFID Tag -->
-          {#if currentUser.rfid_tag}
-            <div>
-              <Card.Title>RFID Tag</Card.Title>
-              <Card.Description>{currentUser.rfid_tag}</Card.Description>
-            </div>
-          {/if}
-
-          <!-- Volunteer Notes -->
-          {#if currentUser.volunteer_notes}
-            <div>
-              <Card.Title>Volunteer Notes</Card.Title>
-              <Card.Description>{currentUser.volunteer_notes}</Card.Description>
-            </div>
-          {/if}
-
-          <!-- Member Since -->
-          <div>
-            <Card.Title>Member Since</Card.Title>
-            <Card.Description>
-              {#if currentUser.created_at}
-                {new Date(currentUser.created_at).toLocaleDateString()}
-              {:else}
-                Not available
-              {/if}
-            </Card.Description>
-          </div>
-        </div>
-      {:else}
-        <Card.Title>Loading</Card.Title>
-        <Card.Description>Loading user data...</Card.Description>
-      {/if}
-    </Card.Content>
-  </Card.Root>
+  {/if}
 </div>
+
+<!-- Profile Edit Modal -->
+{#if currentUser}
+  <ProfileEditModal
+    bind:open={profileEditModalOpen}
+    id={currentUser.id}
+    email={currentUser.email}
+    firstName={currentUser.first_name || ""}
+    lastName={currentUser.last_name || ""}
+    phone={currentUser.phone || ""}
+    dateOfBirth={currentUser.date_of_birth || ""}
+    addressLine={currentUser.address_line || ""}
+    city={currentUser.city || ""}
+    state={currentUser.state || ""}
+    postalCode={currentUser.postal_code || ""}
+    volunteerStartDate={currentUser.volunteer_start_date || ""}
+    isActiveVolunteer={currentUser.is_active_volunteer || false}
+    rfidTag={currentUser.rfid_tag || ""}
+    notes={currentUser.volunteer_notes || ""}
+  />
+{/if}

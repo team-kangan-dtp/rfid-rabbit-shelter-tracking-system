@@ -16,9 +16,9 @@ export const load: LayoutServerLoad = async ({
       .single();
     
     if (error) {
-      console.error("Error fetching user profile:", error);
+      // console.error("Error fetching user profile:", error);
     } else {
-      console.log("✅ User profile loaded:", data);
+      // console.log("✅ User profile loaded:", data);
     }
     
     userProfile = data;
