@@ -8,14 +8,10 @@
   import type {
     Animal,
     HealthCheck,
-    HealthStatus,
     Adoption,
-    AdoptionStatus,
     Shift,
-    ShiftStatus,
     RfidLog,
   } from "../ambient";
-  import PageHeader from "$lib/components/page-header.svelte";
 
   export let data: PageData;
 
@@ -130,7 +126,9 @@
 <main class="px-6 pt-6 pb-6">
   <div class="flex items-center justify-between mb-2">
     <div class="space-y-1">
-      <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+      <h1
+        class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl"
+      >
         Dashboard
       </h1>
       <p class="text-xl text-muted-foreground">
@@ -141,42 +139,143 @@
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
     <Card.Root class="w-full max-w-sm">
-      <Card.Header>
-        <Card.Title>Animals</Card.Title>
+      <Card.Header
+        class="flex flex-row items-center justify-between space-y-0 pb-2"
+      >
+        <Card.Title class="text-lg font-medium">Animals</Card.Title>
+        <a href="/animals">
+          <Button size="sm" variant="outline">View Animals</Button>
+        </a>
       </Card.Header>
 
-      <Card.Content>
+      <Card.Content class="space-y-4">
         {#if animals.length === 0}
-          <p>No animals found.</p>
+          <p class="text-muted-foreground">No animals found.</p>
         {:else}
-          <h2 class="text-lg font-semibold">
-            <span class="text-3xl">{animals.length}</span> total animals
-          </h2>
-          <h2 class="text-lg font-semibold">
-            <span class="text-3xl"
-              >{animals.filter(
-                (animal) => animal.adoptionStatus === "Available"
-              ).length}</span
-            > available for adoption
-          </h2>
-          <h2 class="text-lg font-semibold">
-            <span class="text-3xl"
-              >{animals.filter(
-                (animal) =>
-                  animal.arrivalDate &&
-                  animal.arrivalDate >
-                    new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-              ).length}</span
-            > arrived in the last 14 days
-          </h2>
+          <div class="grid gap-3">
+            <!-- Total animals -->
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <p class="text-2xl">{animals.length}</p>
+                <p class="text-xs text-muted-foreground">Total animals</p>
+              </div>
+              <div
+                class="h-8 w-8 rounded-full bg-muted flex items-center justify-center"
+              >
+                <svg
+                  class="h-4 w-4 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <!-- New arrivals -->
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <p class="text-2xl">
+                  {animals.filter(
+                    (animal) =>
+                      animal.arrivalDate &&
+                      animal.arrivalDate >
+                        new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+                  ).length}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  New arrivals (14 days)
+                </p>
+              </div>
+              <div
+                class="h-8 w-8 rounded-full bg-muted flex items-center justify-center"
+              >
+                <svg
+                  class="h-4 w-4 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Available for adoption -->
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <p class="text-2xl">
+                  {animals.filter(
+                    (animal) => animal.adoptionStatus === "Available"
+                  ).length}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  Available for adoption
+                </p>
+              </div>
+              <div
+                class="h-8 w-8 rounded-full bg-muted flex items-center justify-center"
+              >
+                <svg
+                  class="h-4 w-4 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Successfully adopted -->
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <p class="text-2xl">
+                  {animals.filter(
+                    (animal) => animal.adoptionStatus === "Adopted"
+                  ).length}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  Successfully adopted
+                </p>
+              </div>
+              <div
+                class="h-8 w-8 rounded-full bg-muted flex items-center justify-center"
+              >
+                <svg
+                  class="h-4 w-4 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
         {/if}
       </Card.Content>
-
-      <Card.Footer class="flex-col gap-2">
-        <a href="/animals">
-          <Button class="w-full" variant="outline">View Animals</Button>
-        </a>
-      </Card.Footer>
     </Card.Root>
 
     <!-- <Card.Root class="w-full max-w-sm">
@@ -245,23 +344,164 @@
         </Card.Root> -->
 
     <Card.Root class="w-full max-w-sm">
-      <Card.Header>
-        <Card.Title>Scan Logs</Card.Title>
+      <Card.Header
+        class="flex flex-row items-center justify-between space-y-0 pb-2"
+      >
+        <Card.Title class="text-lg font-medium">Scan Logs</Card.Title>
+        <a href="/scan-logs">
+          <Button size="sm" variant="outline">View scan logs</Button>
+        </a>
       </Card.Header>
 
       <Card.Content>
         {#if rfidScans.length === 0}
-          <p>No logs found.</p>
+          <p class="text-muted-foreground">No logs found.</p>
         {:else}
           <RfidScanChart rawChartData={rfidScans} />
         {/if}
       </Card.Content>
+    </Card.Root>
 
-      <Card.Footer class="flex-col gap-2">
-        <a href="/scan-logs">
-          <Button class="w-full" variant="outline">View scan logs</Button>
+    <Card.Root class="w-full max-w-sm">
+      <Card.Header
+        class="flex flex-row items-center justify-between space-y-0 pb-2"
+      >
+        <Card.Title class="text-lg font-medium">My Profile</Card.Title>
+        <a href="/private">
+          <Button size="sm" variant="outline">Edit Profile</Button>
         </a>
-      </Card.Footer>
+      </Card.Header>
+
+      <Card.Content class="space-y-4">
+        {#if data.userProfile}
+          <div class="grid gap-3">
+            <!-- Name -->
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <p class="text-2xl">
+                  {#if data.userProfile.first_name || data.userProfile.last_name}
+                    {data.userProfile.first_name || ""}
+                    {data.userProfile.last_name || ""}
+                  {:else}
+                    {data.userProfile.email}
+                  {/if}
+                </p>
+                <p class="text-xs text-muted-foreground">Name</p>
+              </div>
+              <div
+                class="h-8 w-8 rounded-full bg-muted flex items-center justify-center"
+              >
+                <svg
+                  class="h-4 w-4 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Volunteer Status -->
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <p class="text-2xl">Active</p>
+                <p class="text-xs text-muted-foreground">Volunteer status</p>
+              </div>
+              <div
+                class="h-8 w-8 rounded-full bg-muted flex items-center justify-center"
+              >
+                <svg
+                  class="h-4 w-4 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Volunteer Since -->
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                {#if data.userProfile.volunteer_start_date}
+                  <p class="text-2xl">
+                    {new Date(
+                      data.userProfile.volunteer_start_date
+                    ).toLocaleDateString()}
+                  </p>
+                  <p class="text-xs text-muted-foreground">Volunteer since</p>
+                {:else}
+                  <p class="text-2xl">Not set</p>
+                  <p class="text-xs text-muted-foreground">Volunteer since</p>
+                {/if}
+              </div>
+              <div
+                class="h-8 w-8 rounded-full bg-muted flex items-center justify-center"
+              >
+                <svg
+                  class="h-4 w-4 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-2"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <!-- RFID Access Card -->
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                {#if data.userProfile.rfid_tag}
+                  <p class="text-2xl">
+                    {data.userProfile.rfid_tag}
+                  </p>
+                  <p class="text-xs text-muted-foreground">RFID access card</p>
+                {:else}
+                  <p class="text-2xl">Not Assigned</p>
+                  <p class="text-xs text-muted-foreground">RFID access card</p>
+                {/if}
+              </div>
+              <div
+                class="h-8 w-8 rounded-full bg-muted flex items-center justify-center"
+              >
+                <svg
+                  class="h-4 w-4 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        {:else}
+          <p class="text-muted-foreground">No profile information available.</p>
+        {/if}
+      </Card.Content>
     </Card.Root>
   </div>
 </main>

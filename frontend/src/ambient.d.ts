@@ -104,6 +104,7 @@ export interface user {
   city: string;
   state: string;
   postcode: string;
-  volunteerStartDate: string;
-  volunteerNotes: string;
+  rfidTag?: string | null;
+  volunteerStartDate?: string | null;
+  volunteerNotes?: string | null;
 }
