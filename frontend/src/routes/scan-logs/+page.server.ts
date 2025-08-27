@@ -1,8 +1,11 @@
 import type { PageServerLoad, Actions } from "./$types";
 import { supabase } from "$lib/supabaseClient";
 
-// READ - Load all rfid logs without authentication check
-export const load: PageServerLoad = async () => {
+// READ - Load all rfid logs with authentication data
+export const load: PageServerLoad = async ({ parent }) => {
+  // Get parent data (includes session, user, userProfile)
+  const parentData = await parent();
+
   // Fetch all rfid logs from the database using the direct supabase client
   const { data, error } = await supabase
     .from("rfid_log")
@@ -21,6 +24,7 @@ export const load: PageServerLoad = async () => {
   if (error) {
     console.error("Supabase error:", error);
     return {
+      ...parentData,
       rfid_logs: [],
       error: error.message,
     };
@@ -29,6 +33,7 @@ export const load: PageServerLoad = async () => {
   // console.log("✅ RFID log data from database:", data);
 
   return {
+    ...parentData,
     rfid_logs: data ?? [],
   };
 };

@@ -4,6 +4,7 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Select from "$lib/components/ui/select/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
+  import SearchIcon from "@lucide/svelte/icons/search";
   import type { Animal, AnimalFilters } from "$lib/types";
   import { debounce } from "$lib/utils/debounce";
   import { onMount } from "svelte";
@@ -93,17 +94,18 @@
 </script>
 
 <!-- Search and Filter Section -->
-<div class="space-y-6">
-  <!-- Search Bar -->
-  <div class="space-y-2">
-    <Label for="search">Search Animals</Label>
-    <Input
-      id="search"
-      type="text"
-      bind:value={searchTerm}
-      placeholder="Search by name, species, or breed..."
-      class="w-full"
-    />
+<div class="flex flex-col gap-4 py-4">
+  <!-- Search Bar - Match scan logs styling -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+    <span class="flex items-center">
+      <SearchIcon class="mr-3 text-gray-500" />
+      <Input
+        type="text"
+        bind:value={searchTerm}
+        placeholder="Search..."
+        class="w-full sm:max-w-sm"
+      />
+    </span>
   </div>
 
   <!-- Filters Card -->
