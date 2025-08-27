@@ -18,8 +18,8 @@ ssid = 'CyFi'
 password = 'SecurityA40'
 
 # Supabase details
-SUPABASE_URL = "http://10.52.126.2:8000" #"http://a824-115-124-9-69.ngrok-free.app"
-API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjQxNzc0MDAwLCJleHAiOjIwMDAwMDAwMDB9.F_gyMhCfM6RuvLkwJn-BK62Wev2nRZAKdej6r43fT9Q"
+SUPABASE_URL = "https://gwhvwgicsxrrfyjyghiw.supabase.co" # http://10.52.126.2:8000 (local)
+API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3aHZ3Z2ljc3hycmZ5anlnaGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyNDc1NDMsImV4cCI6MjA3MTgyMzU0M30.Z41c4KdJhcbYwiy7y4dfNtnyYZSpx0MpWkhRF0RQw3Q"
 
 headers = {
 	"apikey": API_KEY,
@@ -210,7 +210,6 @@ def get_animal_by_rfid(rfid_str):
 		}
 	
 	print("No matching animal found.")
-	display_message("Animal not found", duration=2)
 	return None
 
 # Function to log RFID scan in Supabase
@@ -229,7 +228,7 @@ def log_scan(animal_id, rfid_tag = None):
 		print("Scan logged successfully.")
 		set_leds(green=True)
 		play_sound(1000, 500)  # Play success sound
-		display_message("Scan logged!", duration=1)
+		display_message("Scan logged", duration=1)
 	else:
 		print("Failed to log scan.")
 		# The error message is already displayed by supabase_request
@@ -328,7 +327,7 @@ def main_loop():
 						)
 					else:
 						# Explicitly handle case where animal is not found
-						display_message("Animal tag not found, logging empty scan", duration=2)
+						display_message("Animal not found", "Logging empty", duration=1)
 						log_scan(None, rfid_tag=rfid_str)
 
 
