@@ -14,6 +14,6 @@
   />
 
   <section aria-label="Animal management interface">
-    <AnimalDataTable data={data.animals} />
+    <AnimalDataTable data={data.animals as any} />
   </section>
 </main>
