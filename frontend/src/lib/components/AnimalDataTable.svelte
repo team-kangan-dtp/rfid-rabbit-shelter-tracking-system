@@ -7,6 +7,8 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import type { Animal, AnimalModalMode } from "$lib/types";
+  import { supabase } from "$lib/supabaseClient";
+  import { invalidateAll } from "$app/navigation";
 
   export let data: Animal[] = [];
 
@@ -17,7 +19,6 @@
 
   // Form state
   let showCreateForm = false;
-  let editingAnimal: Animal | null = null;
 
   // Filtered animals
   let filteredAnimals: Animal[] = data;
@@ -48,27 +49,42 @@
   }
 
   // Handle delete from data table
-  function handleDelete(animal: Animal) {
-    if (confirm(`Are you sure you want to delete ${animal.name}?`)) {
-      // TODO: Implement actual deletion logic
-      // This should dispatch an event to the parent component or call an API
-      console.log("Delete animal:", animal);
-      
-      // For now, we'll just close any open modals
+  async function handleDelete(animal: Animal) {
+    if (!animal.id) {
+      alert(`Cannot delete ${animal.name}: Invalid ID`);
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete ${animal.name}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('animal')
+        .delete()
+        .eq('id', animal.id);
+
+      if (error) {
+        alert(`Failed to delete ${animal.name}: ${error.message}`);
+        return;
+      }
+
+      await invalidateAll();
       showAnimalModal = false;
       showCreateForm = false;
+    } catch (err) {
+      alert(`Failed to delete ${animal.name}: An unexpected error occurred`);
     }
   }
 
   // Handle create new animal
   function handleCreate() {
     showCreateForm = true;
-    editingAnimal = null;
     showAnimalModal = false;
   }
 
   function handleCancel() {
-    editingAnimal = null;
     showCreateForm = false;
     showAnimalModal = false;
     viewingAnimal = null;
@@ -120,4 +136,9 @@
 </Dialog.Root>
 
 <!-- Animal Modal -->
-<AnimalModal animal={viewingAnimal} bind:open={showAnimalModal} mode={modalMode} allAnimals={data} />
+<AnimalModal
+  animal={viewingAnimal}
+  bind:open={showAnimalModal}
+  mode={modalMode}
+  allAnimals={data}
+/>
