@@ -208,66 +208,19 @@
     species?: string;
   };
 
-  function convertToAnimalArray(data: any[]): DropdownAnimal[] {
-    // Handle the case where data is already properly formatted
-    if (
-      Array.isArray(data) &&
-      data.length > 0 &&
-      typeof data[0] === "object" &&
-      "id" in data[0] &&
-      "name" in data[0]
-    ) {
-      return data.map((animal) => ({
-        id: animal.id,
-        name: animal.name,
-        uuid: animal.id, // Use id as uuid since they're the same in our schema
-        species: animal.species,
-      }));
-    }
-
-    // If data is not in expected format, return empty array and log for debugging
-    console.warn("Unexpected animal data format:", data);
-    return [];
-  }
-
   async function loadAnimalsIfNeeded() {
     if (animals.length || loadingAnimals) return;
     loadingAnimals = true;
     try {
-      const fd = new FormData();
-      fd.set("dbFields", "*"); // get all fields
-      const res = await fetch("/animals?/get", { method: "POST", body: fd });
-      if (res.ok) {
-        const json = await res.json();
-        console.log("Raw animals response:", json);
+      const { data, error } = await supabase.from("animal").select("*");
 
-        // Handle different response formats
-        let animalArray: any[] = [];
+      console.log("Fetched animals:", data);
 
-        // Check if it's a SvelteKit action response
-        if (json.data) {
-          const raw = json.data;
-          if (typeof raw === "string") {
-            try {
-              animalArray = JSON.parse(raw);
-            } catch (err) {
-              console.warn("Failed to parse animals JSON string:", err);
-              animalArray = [];
-            }
-          } else if (Array.isArray(raw)) {
-            animalArray = raw;
-          } else if (raw.animals && Array.isArray(raw.animals)) {
-            animalArray = raw.animals;
-          }
-        } else if (Array.isArray(json)) {
-          animalArray = json;
-        }
-
-        console.log("Parsed animal array:", animalArray);
-        animals = convertToAnimalArray(animalArray);
-        console.log("Converted animals for dropdown:", animals);
+      // Check if it's a SvelteKit action response
+      if (data) {
+        animals = data;
       } else {
-        console.warn("Animals fetch failed:", res.status);
+        console.warn("Animals fetch failed:", error);
       }
     } catch (e) {
       console.warn("Failed to fetch animals list for RFID assignment", e);
@@ -284,34 +237,25 @@
       return;
     }
     assigning = true;
-    const fd = new FormData();
-    fd.set("id", selectedAnimalId);
-    fd.set("rfid_tag", localRfidTag);
     try {
-      const res = await fetch("/animals?/put", {
-        method: "POST",
-        body: fd,
-      });
-      if (!res.ok) {
-        assignError = (await res.text()) || "Failed to assign tag";
+      const { error } = await supabase
+        .from("animal")
+        .update({ rfid_tag: localRfidTag })
+        .eq("id", selectedAnimalId);
+      if (error) {
+        assignError = error.message || "Failed to assign tag";
       } else {
         assignSuccess = true;
-        // Fetch the complete animal data to show in the modal
-        const { data: animal, error } = await supabase
-          .from("animal")
-          .select("*")
-          .eq("id", selectedAnimalId)
-          .single();
-
-        if (animal && !error) {
-          // Replace localAnimalData with the fetched animal data
-          localAnimalData = { ...animal, rfid_tag: localRfidTag };
+        // Use the selected animal from the local animals array and update with the new RFID tag
+        const selectedAnimal = animals.find((a) => a.id === selectedAnimalId);
+        if (selectedAnimal) {
+          localAnimalData = { ...selectedAnimal, rfid_tag: localRfidTag };
           // Clear localRfidTag to transition to details view
           localRfidTag = null;
           // Mark that we've made local changes
           hasLocalChanges = true;
         } else {
-          console.error("Error fetching updated animal data:", error);
+          assignError = "Selected animal not found in local data.";
         }
       }
     } catch (err: any) {
@@ -706,7 +650,7 @@
                     >
                       {#if selectedAnimalId}
                         {#key selectedAnimalId}
-                          {animals.find((a) => a.uuid === selectedAnimalId)
+                          {animals.find((a) => a.id === selectedAnimalId)
                             ?.name || "Select animal"}
                         {/key}
                       {:else if loadingAnimals}
@@ -734,16 +678,16 @@
                       <CommandInput placeholder="Search animals..." />
                       <CommandList>
                         <CommandEmpty>No animals found.</CommandEmpty>
-                        {#each animals as a (a.uuid)}
+                        {#each animals as a (a.id)}
                           <CommandItem
                             value={a.name}
                             onSelect={() => {
-                              selectedAnimalId = a.uuid;
+                              selectedAnimalId = a.id;
                               popoverOpen = false;
                             }}
                           >
-                            <span class="truncate">{a.name}</span>
-                            {#if selectedAnimalId === a.uuid}
+                            <span class="truncate">{a.name} ({a.species})</span>
+                            {#if selectedAnimalId === a.id}
                               <svg
                                 class="ml-auto h-4 w-4 text-indigo-500"
                                 viewBox="0 0 24 24"
