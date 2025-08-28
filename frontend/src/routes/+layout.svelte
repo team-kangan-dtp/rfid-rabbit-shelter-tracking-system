@@ -123,7 +123,7 @@
             // Check if user is authenticated before querying
             if (!session && !user) {
               console.log(
-                "User not authenticated - cannot fetch animal details",
+                "User not authenticated - cannot fetch animal details"
               );
               animalDetails = {
                 name: "Authentication Required",
@@ -145,7 +145,7 @@
                 console.log("Animal details set:", animal);
                 console.log(
                   "animalDetails state after setting:",
-                  animalDetails,
+                  animalDetails
                 );
                 console.log("Dialog should show animal data for:", animal.name);
 
@@ -160,21 +160,9 @@
             console.log(
               "No animal_id in payload, offer to assign this rfid tag to animal"
             );
-            // Try to fetch animal details
-            try {
-              const { data: animals, error } = await supabase
-                .from("animal")
-                .select("*");
-
-              console.log("Supabase response - data:", animals);
-
-              animalDetails = animals;
-              rfidTag = payload.new.rfid_tag || null;
-            } catch (error) {
-              console.error("Error fetching animal details:", error);
-              animalDetails = null;
-            }
-
+            // Set animalDetails to null and rfidTag to trigger assignment mode
+            animalDetails = null;
+            rfidTag = payload.new.rfid_tag || null;
             dialogOpen = true;
           }
         }

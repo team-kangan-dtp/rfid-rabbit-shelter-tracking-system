@@ -5,9 +5,11 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import RabbitIcon from "@lucide/svelte/icons/rabbit";
+  import Loader2Icon from "@lucide/svelte/icons/loader-2";
 
   let { form } = $props();
   let mode = $state<"login" | "register">("login");
+  let isLoading = $state(false);
 
   const emailId = crypto.randomUUID();
   const passwordId = crypto.randomUUID();
@@ -49,18 +51,16 @@
           </div>
         {/if}
 
-        {#if form?.message}
-          <div
-            class="mb-4 p-3 bg-blue-100 border border-blue-400 text-blue-700 rounded text-sm"
-          >
-            {form.message}
-          </div>
-        {/if}
-
         <form
           method="POST"
           action={mode === "login" ? "?/login" : "?/signup"}
-          use:enhance
+          use:enhance={() => {
+            isLoading = true;
+            return async ({ update }) => {
+              await update();
+              isLoading = false;
+            };
+          }}
         >
           <div class="grid gap-6">
             <div class="grid gap-3">
@@ -70,6 +70,7 @@
                 name="email"
                 type="email"
                 placeholder="m@example.com"
+                disabled={isLoading}
                 required
               />
             </div>
@@ -79,11 +80,17 @@
                 id="password-{passwordId}"
                 name="password"
                 type="password"
+                disabled={isLoading}
                 required
               />
             </div>
-            <Button type="submit" class="w-full">
-              {mode === "login" ? "Login" : "Register"}
+            <Button type="submit" class="w-full" disabled={isLoading}>
+              {#if isLoading}
+                <Loader2Icon class="mr-2 h-4 w-4 animate-spin" />
+                {mode === "login" ? "Signing in..." : "Creating account..."}
+              {:else}
+                {mode === "login" ? "Login" : "Register"}
+              {/if}
             </Button>
           </div>
         </form>
@@ -95,8 +102,15 @@
             : "Already have an account?"}
           <button
             type="button"
-            on:click={() => (mode = mode === "login" ? "register" : "login")}
-            class="underline underline-offset-4 hover:text-primary"
+            on:click={() => {
+              mode = mode === "login" ? "register" : "login";
+              // Clear any previous form state when switching modes
+              if (form?.error) {
+                form = null;
+              }
+            }}
+            class="underline underline-offset-4 hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading}
           >
             {mode === "login" ? "Sign up" : "Sign in"}
           </button>
