@@ -37,7 +37,11 @@
       {#if mode === "view"}
         <AnimalViewDetails {animal} />
       {:else if mode === "edit" && editingAnimal}
-        <AnimalEditForm animal={editingAnimal} {allAnimals} />
+        <AnimalEditForm 
+          animal={editingAnimal} 
+          {allAnimals} 
+          onUpdateSuccess={() => open = false}
+        />
       {/if}
     {:else}
       <div class="flex items-center justify-center p-8">
