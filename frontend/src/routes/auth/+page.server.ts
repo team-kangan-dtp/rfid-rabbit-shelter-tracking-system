@@ -1,4 +1,4 @@
-import { redirect } from "@sveltejs/kit";
+import { redirect, fail } from "@sveltejs/kit";
 
 import type { Actions } from "./$types";
 
@@ -8,10 +8,25 @@ export const actions: Actions = {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
+    // Basic validation
+    if (!email || !password) {
+      return fail(400, {
+        error: "Email and password are required",
+      });
+    }
+
+    if (password.length < 6) {
+      return fail(400, {
+        error: "Password must be at least 6 characters long",
+      });
+    }
+
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) {
-      console.error(error);
-      redirect(303, "/auth/error");
+      console.error("Signup error:", error);
+      return fail(400, {
+        error: error.message || "Failed to create account. Please try again.",
+      });
     } else {
       redirect(303, "/auth/check-mail");
     }
@@ -21,13 +36,22 @@ export const actions: Actions = {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
+    // Basic validation
+    if (!email || !password) {
+      return fail(400, {
+        error: "Email and password are required",
+      });
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     if (error) {
-      console.error(error);
-      redirect(303, "/auth/error");
+      console.error("Login error:", error);
+      return fail(400, {
+        error: error.message || "Invalid email or password. Please try again.",
+      });
     } else {
       redirect(303, "/");
     }

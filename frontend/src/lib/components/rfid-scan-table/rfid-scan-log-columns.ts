@@ -9,16 +9,16 @@ export type RfidLog = {
     id: string;
     first_name: string;
     last_name: string;
-  };
+  } | null;
   animal_id: {
     id: string;
     name: string;
     species: string;
-  };
+  } | null;
   animal_note?: {
     id: string;
     note_type: string;
-  }; // Optional field for animal notes
+  } | null; // Optional field for animal notes
 };
 
 export const columns: ColumnDef<RfidLog>[] = [
@@ -45,12 +45,16 @@ export const columns: ColumnDef<RfidLog>[] = [
     sortingFn: (rowA, rowB, columnId) => {
       const userA = rowA.getValue(columnId) as RfidLog["user_id"];
       const userB = rowB.getValue(columnId) as RfidLog["user_id"];
+      if (!userA && !userB) return 0;
+      if (!userA) return 1;
+      if (!userB) return -1;
       const nameA = `${userA.first_name} ${userA.last_name}`;
       const nameB = `${userB.first_name} ${userB.last_name}`;
       return nameA.localeCompare(nameB);
     },
     cell: ({ row }) => {
       const user = row.getValue("user_id") as RfidLog["user_id"];
+      if (!user) return "Unknown User";
       return `${user.first_name} ${user.last_name}`;
     },
   },
@@ -61,10 +65,14 @@ export const columns: ColumnDef<RfidLog>[] = [
     sortingFn: (rowA, rowB, columnId) => {
       const animalA = rowA.getValue(columnId) as RfidLog["animal_id"];
       const animalB = rowB.getValue(columnId) as RfidLog["animal_id"];
+      if (!animalA && !animalB) return 0;
+      if (!animalA) return 1;
+      if (!animalB) return -1;
       return animalA.name.localeCompare(animalB.name);
     },
     cell: ({ row }) => {
       const animal = row.getValue("animal_id") as RfidLog["animal_id"];
+      if (!animal) return "Unknown Animal";
       return `${animal.name} (${animal.species})`;
     },
   },

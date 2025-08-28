@@ -41,12 +41,34 @@
   let saving = $state(false);
   let errorMsg: string | null = $state(null);
 
+  // Local copies of prop data that can be modified
+  let localAnimalData = $state(animalData);
+  let localRfidTag = $state(rfidTag);
+  let hasLocalChanges = $state(false); // Track if we've made local changes
+
+  // Sync local state with props when they change (but only if no local changes)
+  $effect(() => {
+    if (!hasLocalChanges) {
+      localAnimalData = animalData;
+    }
+  });
+
+  $effect(() => {
+    if (!hasLocalChanges) {
+      localRfidTag = rfidTag;
+    }
+  });
+
   // Local state for dialog open/close handling
   let localDialogOpen = $state(false);
 
   // Sync local dialog state with prop
   $effect(() => {
     localDialogOpen = dialogOpen;
+    // Reset local changes flag when dialog opens/closes
+    if (!dialogOpen) {
+      hasLocalChanges = false;
+    }
   });
 
   // Animal selection / assignment state
@@ -76,11 +98,11 @@
   async function submitUpdate(e: Event) {
     e.preventDefault();
     errorMsg = null;
-    if (!animalData) return;
+    if (!localAnimalData) return;
     saving = true;
     const form = e.target as HTMLFormElement;
     const fd = new FormData(form);
-    fd.set("id", animalData.id);
+    fd.set("id", localAnimalData.id);
     try {
       // use new partial update action
       const res = await fetch("/animals?/put", {
@@ -91,19 +113,19 @@
         const t = await res.text();
         errorMsg = t || "Update failed";
       } else {
-        // Optimistically update local animalData object
-        animalData.name = fd.get("name");
-        animalData.species = fd.get("species");
-        animalData.breed = fd.get("breed");
-        animalData.fur_colour = fd.get("fur_colour");
-        animalData.weight_kg = fd.get("weight_kg")
+        // Optimistically update local localAnimalData object
+        localAnimalData.name = fd.get("name");
+        localAnimalData.species = fd.get("species");
+        localAnimalData.breed = fd.get("breed");
+        localAnimalData.fur_colour = fd.get("fur_colour");
+        localAnimalData.weight_kg = fd.get("weight_kg")
           ? parseFloat(fd.get("weight_kg") as string)
           : null;
-        animalData.date_of_birth = fd.get("date_of_birth");
-        animalData.arrival_date = fd.get("arrival_date");
-        animalData.adoption_status = fd.get("adoption_status");
-        animalData.special_needs = fd.get("special_needs");
-        animalData.description = fd.get("description");
+        localAnimalData.date_of_birth = fd.get("date_of_birth");
+        localAnimalData.arrival_date = fd.get("arrival_date");
+        localAnimalData.adoption_status = fd.get("adoption_status");
+        localAnimalData.special_needs = fd.get("special_needs");
+        localAnimalData.description = fd.get("description");
         editing = false;
       }
     } catch (err: any) {
@@ -129,68 +151,83 @@
     noteTypes.find((f) => f.value === value)?.label ?? "Select a note type"
   );
 
+  // Create a new note
   async function createNewNote(noteData: string, noteType: string) {
-    const { data, error } = await supabase
-      .from("animal_note")
-      .insert([
+    try {
+      // Insert a new entry note
+      const { error } = await supabase.from("animal_note").insert([
         {
-          animal_id: animalData.id,
+          animal_id: localAnimalData.id,
           user_id: userID,
           note_content: noteData,
           note_type: noteType,
         },
-      ])
-      .select();
+      ]);
 
-    if (error) {
-      console.error("Error creating note:", error);
-      alert("Failed to create note");
-    } else {
-      console.log("Note created successfully:", data);
+      const { data: dbNoteData, error: fetchError } = await supabase
+        .from("animal_note")
+        .select("id")
+        .eq("animal_id", localAnimalData.id)
+        .eq("user_id", userID)
+        .eq("note_content", noteData)
+        .eq("note_type", noteType)
+        .single();
+
+      console.log("Fetched note data:", dbNoteData[0].id);
+
+      // Update the RFID log entry to link it to this note
+      if (dbNoteData && dbNoteData[0].id && scanData && scanData.id) {
+        const noteId = dbNoteData[0].id;
+        const { error: updateError } = await supabase
+          .from("rfid_log")
+          .update({ animal_note: noteId })
+          .eq("id", scanData.id);
+
+        if (updateError) {
+          console.error("Error linking note to RFID log:", updateError);
+        } else {
+          console.log("Successfully linked note to RFID log");
+        }
+      }
+
       alert("Note created successfully");
-    }
 
-    newNoteData = "";
-    newNoteType = "General";
-    onClose();
+      newNoteData = "";
+      newNoteType = "General";
+      onClose();
+    } catch (error) {
+      console.log("There was an error while creating the note:", error);
+      alert("Failed to create note: " + error.message);
+    }
   }
 
   type DropdownAnimal = {
-    id: number;
+    id: string;
     name: string;
     uuid: string;
+    species?: string;
   };
 
   function convertToAnimalArray(data: any[]): DropdownAnimal[] {
-    const result: DropdownAnimal[] = [];
-
-    for (let i = 0; i < data.length; i++) {
-      const item = data[i];
-
-      if (
-        typeof item === "object" &&
-        item !== null &&
-        "id" in item &&
-        "name" in item
-      ) {
-        const id = item.id;
-        const nameId = item.name;
-
-        const uuid = data[i + 1];
-        const name = data[i + 2];
-
-        if (typeof uuid === "string" && typeof name === "string") {
-          result.push({
-            id,
-            name,
-            uuid,
-          });
-          i += 2; // Skip the next two items since we've consumed them
-        }
-      }
+    // Handle the case where data is already properly formatted
+    if (
+      Array.isArray(data) &&
+      data.length > 0 &&
+      typeof data[0] === "object" &&
+      "id" in data[0] &&
+      "name" in data[0]
+    ) {
+      return data.map((animal) => ({
+        id: animal.id,
+        name: animal.name,
+        uuid: animal.id, // Use id as uuid since they're the same in our schema
+        species: animal.species,
+      }));
     }
 
-    return result;
+    // If data is not in expected format, return empty array and log for debugging
+    console.warn("Unexpected animal data format:", data);
+    return [];
   }
 
   async function loadAnimalsIfNeeded() {
@@ -198,35 +235,37 @@
     loadingAnimals = true;
     try {
       const fd = new FormData();
-      fd.set("dbFields", "*"); // minimal fields
+      fd.set("dbFields", "*"); // get all fields
       const res = await fetch("/animals?/get", { method: "POST", body: fd });
       if (res.ok) {
         const json = await res.json();
-        console.log(json);
-        // SvelteKit action JSON has shape { type, status, data: { animals } }
-        const raw = json.data;
+        console.log("Raw animals response:", json);
+
+        // Handle different response formats
         let animalArray: any[] = [];
 
-        if (typeof raw === "string") {
-          try {
-            animalArray = JSON.parse(raw);
-          } catch (err) {
+        // Check if it's a SvelteKit action response
+        if (json.data) {
+          const raw = json.data;
+          if (typeof raw === "string") {
             try {
-              // try to sanitize common escaping/double-encoding issues
-              animalArray = JSON.parse(raw.replace(/\\+/g, ""));
-            } catch (err2) {
-              console.warn("Failed to parse animals string:", err2);
+              animalArray = JSON.parse(raw);
+            } catch (err) {
+              console.warn("Failed to parse animals JSON string:", err);
               animalArray = [];
             }
+          } else if (Array.isArray(raw)) {
+            animalArray = raw;
+          } else if (raw.animals && Array.isArray(raw.animals)) {
+            animalArray = raw.animals;
           }
-        } else if (Array.isArray(raw)) {
-          animalArray = raw;
-        } else {
-          animalArray = [];
+        } else if (Array.isArray(json)) {
+          animalArray = json;
         }
 
+        console.log("Parsed animal array:", animalArray);
         animals = convertToAnimalArray(animalArray);
-        console.debug("Loaded animals:", animals);
+        console.log("Converted animals for dropdown:", animals);
       } else {
         console.warn("Animals fetch failed:", res.status);
       }
@@ -240,14 +279,14 @@
   async function assignRFID() {
     assignError = null;
     assignSuccess = false;
-    if (!selectedAnimalId || !rfidTag) {
+    if (!selectedAnimalId || !localRfidTag) {
       assignError = "Select an animal first.";
       return;
     }
     assigning = true;
     const fd = new FormData();
     fd.set("id", selectedAnimalId);
-    fd.set("rfid_tag", rfidTag);
+    fd.set("rfid_tag", localRfidTag);
     try {
       const res = await fetch("/animals?/put", {
         method: "POST",
@@ -257,12 +296,22 @@
         assignError = (await res.text()) || "Failed to assign tag";
       } else {
         assignSuccess = true;
-        // Promote chosen animal to animalData so details view appears
-        const chosen = animals.find((a) => a.id === selectedAnimalId);
-        if (chosen) {
-          chosen.rfid_tag = rfidTag;
-          // mutate original reference if possible
-          animalData ? Object.assign(animalData, chosen) : null;
+        // Fetch the complete animal data to show in the modal
+        const { data: animal, error } = await supabase
+          .from("animal")
+          .select("*")
+          .eq("id", selectedAnimalId)
+          .single();
+
+        if (animal && !error) {
+          // Replace localAnimalData with the fetched animal data
+          localAnimalData = { ...animal, rfid_tag: localRfidTag };
+          // Clear localRfidTag to transition to details view
+          localRfidTag = null;
+          // Mark that we've made local changes
+          hasLocalChanges = true;
+        } else {
+          console.error("Error fetching updated animal data:", error);
         }
       }
     } catch (err: any) {
@@ -314,17 +363,17 @@
           <Dialog.Description
             class="text-sm text-neutral-500 dark:text-neutral-400 leading-snug"
           >
-            {#if animalData}
+            {#if localAnimalData}
               Animal scan detected for <span
                 class="font-medium text-neutral-900 dark:text-neutral-100"
-                >{animalData.name}</span
+                >{localAnimalData.name}</span
               >
             {:else}
               A new RFID scan has been detected.
             {/if}
           </Dialog.Description>
         </div>
-        {#if animalData}
+        {#if localAnimalData}
           <Button
             variant="ghost"
             size="sm"
@@ -375,7 +424,7 @@
         {/if}
 
         <!-- If this scan has animal data and is viewing only -->
-        {#if animalData && !editing}
+        {#if localAnimalData && !editing}
           <section class="space-y-3">
             <h3
               class="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 flex items-center gap-2"
@@ -386,7 +435,7 @@
               <div class="flex justify-between text-sm px-2 py-1">
                 <span class="text-neutral-500 dark:text-neutral-400">Name</span>
                 <span class="font-medium text-neutral-900 dark:text-neutral-100"
-                  >{animalData.name}</span
+                  >{localAnimalData.name}</span
                 >
               </div>
               <div class="flex justify-between text-sm px-2 py-1">
@@ -394,14 +443,14 @@
                   >Species</span
                 >
                 <span class="text-neutral-900 dark:text-neutral-100"
-                  >{animalData.species}</span
+                  >{localAnimalData.species}</span
                 >
               </div>
               <div class="flex justify-between text-sm px-2 py-1">
                 <span class="text-neutral-500 dark:text-neutral-400">Breed</span
                 >
                 <span class="text-neutral-900 dark:text-neutral-100"
-                  >{animalData.breed || "N/A"}</span
+                  >{localAnimalData.breed || "N/A"}</span
                 >
               </div>
               <div class="flex justify-between text-sm px-2 py-1">
@@ -409,7 +458,7 @@
                   >Fur Colour</span
                 >
                 <span class="text-neutral-900 dark:text-neutral-100"
-                  >{animalData.fur_colour || "N/A"}</span
+                  >{localAnimalData.fur_colour || "N/A"}</span
                 >
               </div>
               <div class="flex justify-between text-sm px-2 py-1">
@@ -417,7 +466,7 @@
                   >Weight</span
                 >
                 <span class="text-neutral-900 dark:text-neutral-100"
-                  >{formatWeight(animalData.weight_kg)}</span
+                  >{formatWeight(localAnimalData.weight_kg)}</span
                 >
               </div>
               <div class="flex justify-between text-sm px-2 py-1">
@@ -425,7 +474,7 @@
                   >Date of Birth</span
                 >
                 <span class="text-neutral-900 dark:text-neutral-100"
-                  >{formatDate(animalData.date_of_birth)}</span
+                  >{formatDate(localAnimalData.date_of_birth)}</span
                 >
               </div>
               <div class="flex justify-between text-sm px-2 py-1">
@@ -433,7 +482,7 @@
                   >Arrival Date</span
                 >
                 <span class="text-neutral-900 dark:text-neutral-100"
-                  >{formatDate(animalData.arrival_date)}</span
+                  >{formatDate(localAnimalData.arrival_date)}</span
                 >
               </div>
               <div class="flex items-center justify-between text-sm px-2 py-1">
@@ -441,13 +490,15 @@
                   >Status</span
                 >
                 <Badge
-                  variant={adoptionStatusVariant(animalData.adoption_status)}
+                  variant={adoptionStatusVariant(
+                    localAnimalData.adoption_status
+                  )}
                   class="capitalize"
                 >
-                  {animalData.adoption_status || "Unknown"}
+                  {localAnimalData.adoption_status || "Unknown"}
                 </Badge>
               </div>
-              {#if animalData.special_needs}
+              {#if localAnimalData.special_needs}
                 <div
                   class="mt-2 rounded-md border bg-rose-50 dark:bg-rose-500/10 dark:border-rose-500/30 p-3"
                 >
@@ -459,12 +510,12 @@
                   <p
                     class="text-xs text-rose-800 dark:text-rose-200 leading-snug"
                   >
-                    {animalData.special_needs}
+                    {localAnimalData.special_needs}
                   </p>
                 </div>
               {/if}
 
-              {#if animalData.description}
+              {#if localAnimalData.description}
                 <div class="mt-2 rounded-md border dark:border-gray-500/30 p-3">
                   <p
                     class="text-xs font-medium text-neutral-900 dark:text-neutral-100 mb-1"
@@ -474,7 +525,7 @@
                   <p
                     class="text-xs text-neutral-800 dark:text-neutral-200 leading-snug"
                   >
-                    {animalData.description}
+                    {localAnimalData.description}
                   </p>
                 </div>
               {/if}
@@ -483,7 +534,7 @@
         {/if}
 
         <!-- If this scan has animal data and is editing -->
-        {#if animalData && editing}
+        {#if localAnimalData && editing}
           <form class="space-y-5" onsubmit={submitUpdate}>
             <h3
               class="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 flex items-center gap-2"
@@ -494,7 +545,12 @@
             <div class="grid gap-4">
               <div class="grid gap-1.5">
                 <Label for="name">Name</Label>
-                <Input id="name" name="name" required value={animalData.name} />
+                <Input
+                  id="name"
+                  name="name"
+                  required
+                  value={localAnimalData.name}
+                />
               </div>
               <div class="grid gap-1.5">
                 <Label for="species">Species</Label>
@@ -502,19 +558,23 @@
                   id="species"
                   name="species"
                   required
-                  value={animalData.species}
+                  value={localAnimalData.species}
                 />
               </div>
               <div class="grid gap-1.5">
                 <Label for="breed">Breed</Label>
-                <Input id="breed" name="breed" value={animalData.breed || ""} />
+                <Input
+                  id="breed"
+                  name="breed"
+                  value={localAnimalData.breed || ""}
+                />
               </div>
               <div class="grid gap-1.5">
                 <Label for="fur_colour">Fur Colour</Label>
                 <Input
                   id="fur_colour"
                   name="fur_colour"
-                  value={animalData.fur_colour || ""}
+                  value={localAnimalData.fur_colour || ""}
                 />
               </div>
               <div class="grid gap-1.5">
@@ -524,7 +584,7 @@
                   name="weight_kg"
                   type="number"
                   step="0.01"
-                  value={animalData.weight_kg || ""}
+                  value={localAnimalData.weight_kg || ""}
                 />
               </div>
               <div class="grid gap-1.5">
@@ -533,7 +593,7 @@
                   id="date_of_birth"
                   name="date_of_birth"
                   type="date"
-                  value={animalData.date_of_birth || ""}
+                  value={localAnimalData.date_of_birth || ""}
                 />
               </div>
               <div class="grid gap-1.5">
@@ -542,15 +602,40 @@
                   id="arrival_date"
                   name="arrival_date"
                   type="date"
-                  value={animalData.arrival_date || ""}
+                  value={localAnimalData.arrival_date || ""}
                 />
               </div>
               <div class="grid gap-1.5">
                 <Label for="adoption_status">Adoption Status</Label>
-                <Input
-                  id="adoption_status"
+                <Select.Root
+                  type="single"
+                  name="adoptionStatus"
+                  bind:value={localAnimalData.adoption_status}
+                >
+                  <Select.Trigger class="w-[180px]">
+                    {localAnimalData.adoption_status ||
+                      "Select adoption status"}
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Group>
+                      <Select.Label>Adoption Status</Select.Label>
+                      <Select.Item value="Available">Available</Select.Item>
+                      <Select.Item value="Pending">Pending</Select.Item>
+                      <Select.Item value="Adopted">Adopted</Select.Item>
+                      <Select.Item value="Hold">Hold</Select.Item>
+                      <Select.Item value="Medical Hold"
+                        >Medical Hold</Select.Item
+                      >
+                      <Select.Item value="Not Available"
+                        >Not Available</Select.Item
+                      >
+                    </Select.Group>
+                  </Select.Content>
+                </Select.Root>
+                <input
+                  type="hidden"
                   name="adoption_status"
-                  value={animalData.adoption_status || ""}
+                  value={localAnimalData.adoption_status || ""}
                 />
               </div>
               <div class="grid gap-1.5">
@@ -558,16 +643,15 @@
                 <Input
                   id="special_needs"
                   name="special_needs"
-                  value={animalData.special_needs || ""}
+                  value={localAnimalData.special_needs || ""}
                 />
               </div>
               <div class="grid gap-1.5">
                 <Label for="description">Description</Label>
-                <Input
+                <Textarea
                   id="description"
                   name="description"
-                  type="textarea"
-                  value={animalData.description || ""}
+                  value={localAnimalData.description || ""}
                 />
               </div>
 
@@ -594,7 +678,7 @@
         {/if}
 
         <!-- If this scan has no animal data associated with the RFID tag, offer to assign it to an existing animal -->
-        {#if !animalData && rfidTag}
+        {#if !localAnimalData && localRfidTag}
           <section class="space-y-4">
             <h3
               class="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400 flex items-center gap-2"
@@ -604,7 +688,7 @@
             <p class="text-sm text-neutral-600 dark:text-neutral-400">
               Tag <code
                 class="font-mono px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800"
-                >{rfidTag}</code
+                >{localRfidTag}</code
               > is unassigned. Select an animal to associate it.
             </p>
 
@@ -683,7 +767,7 @@
 
                 {#if selectedAnimalId}
                   <Badge variant="outline" class="max-w-[140px] truncate">
-                    {animals.find((a) => a.id === selectedAnimalId)?.species}
+                    {animals.find((a) => a.uuid === selectedAnimalId)?.species}
                   </Badge>
                 {/if}
               </div>
@@ -717,45 +801,50 @@
     <Separator />
 
     <Dialog.Footer class="px-6 py-4 flex justify-end gap-2">
-      <Dialog.Root>
-        <Dialog.Trigger asChild>
-          <Button variant="outline">Add Note</Button>
-        </Dialog.Trigger>
-        <Dialog.Content>
-          <Dialog.Title>Add a note for this animal</Dialog.Title>
-          <Dialog.Description>
-            <Textarea id="note" class="mb-3" bind:value={newNoteData} />
-            <Select.Root
-              type="single"
-              name="favoriteFruit"
-              bind:value={newNoteType}
-            >
-              <Select.Trigger class="w-[180px]">
-                {triggerContent}
-              </Select.Trigger>
-              <Select.Content>
-                <Select.Group>
-                  <Select.Label>Note Types</Select.Label>
-                  {#each noteTypes as noteType (noteType.value)}
-                    <Select.Item value={noteType.value} label={noteType.label}>
-                      {noteType.label}
-                    </Select.Item>
-                  {/each}
-                </Select.Group>
-              </Select.Content>
-            </Select.Root>
-          </Dialog.Description>
+      {#if localAnimalData}
+        <Dialog.Root>
+          <Dialog.Trigger asChild>
+            <Button variant="outline">Add Note</Button>
+          </Dialog.Trigger>
+          <Dialog.Content>
+            <Dialog.Title>Add a note for this animal</Dialog.Title>
+            <Dialog.Description>
+              <Textarea id="note" class="mb-3" bind:value={newNoteData} />
+              <Select.Root
+                type="single"
+                name="noteType"
+                bind:value={newNoteType}
+              >
+                <Select.Trigger class="w-[180px]">
+                  {triggerContent}
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Group>
+                    <Select.Label>Note Types</Select.Label>
+                    {#each noteTypes as noteType (noteType.value)}
+                      <Select.Item
+                        value={noteType.value}
+                        label={noteType.label}
+                      >
+                        {noteType.label}
+                      </Select.Item>
+                    {/each}
+                  </Select.Group>
+                </Select.Content>
+              </Select.Root>
+            </Dialog.Description>
 
-          <Dialog.Footer>
-            <Button
-              variant="outline"
-              onclick={() => {
-                createNewNote(newNoteData, newNoteType);
-              }}>Create note</Button
-            >
-          </Dialog.Footer>
-        </Dialog.Content>
-      </Dialog.Root>
+            <Dialog.Footer>
+              <Button
+                variant="outline"
+                onclick={() => {
+                  createNewNote(newNoteData, newNoteType);
+                }}>Create note</Button
+              >
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Root>
+      {/if}
       <Button variant="outline" onclick={onClose}>Close</Button>
     </Dialog.Footer>
   </Dialog.Content>
