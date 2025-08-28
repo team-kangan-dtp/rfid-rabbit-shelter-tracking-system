@@ -37,6 +37,7 @@ declare module '$env/static/private' {
 	export const HOMEBREW_REPOSITORY: string;
 	export const TMPDIR: string;
 	export const npm_config_global_prefix: string;
+
 	export const TERM_PROGRAM_VERSION: string;
 	export const COLOR: string;
 	export const npm_config_noproxy: string;
@@ -53,6 +54,14 @@ declare module '$env/static/private' {
 	export const npm_package_json: string;
 	export const npm_config_engine_strict: string;
 	export const _: string;
+
+	export const npm_config_init_module: string;
+	export const npm_config_local_prefix: string;
+	export const npm_config_node_gyp: string;
+	export const npm_config_noproxy: string;
+	export const npm_config_npm_version: string;
+	export const npm_config_prefix: string;
+
 	export const npm_config_userconfig: string;
 	export const npm_config_init_module: string;
 	export const __CFBundleIdentifier: string;
@@ -75,6 +84,7 @@ declare module '$env/static/private' {
 	export const LOGNAME: string;
 	export const npm_lifecycle_script: string;
 	export const SSH_SOCKET_DIR: string;
+
 	export const BUN_INSTALL: string;
 	export const npm_config_user_agent: string;
 	export const INFOPATH: string;
@@ -84,6 +94,23 @@ declare module '$env/static/private' {
 	export const npm_config_prefix: string;
 	export const COLORTERM: string;
 	export const NODE_ENV: string;
+
+	export const SystemDrive: string;
+	export const SystemRoot: string;
+	export const TEMP: string;
+	export const TERM_PROGRAM: string;
+	export const TMP: string;
+	export const USERDOMAIN: string;
+	export const USERDOMAIN_ROAMINGPROFILE: string;
+	export const USERNAME: string;
+	export const USERPROFILE: string;
+	export const WARP_HONOR_PS1: string;
+	export const WARP_IS_LOCAL_SHELL_SESSION: string;
+	export const WARP_SHELL_DEBUG_MODE: string;
+	export const WARP_USE_SSH_WRAPPER: string;
+	export const windir: string;
+	export const ZES_ENABLE_SYSMAN: string;
+
 }
 
 /**
@@ -127,6 +154,7 @@ declare module '$env/dynamic/private' {
 		HOMEBREW_REPOSITORY: string;
 		TMPDIR: string;
 		npm_config_global_prefix: string;
+
 		TERM_PROGRAM_VERSION: string;
 		COLOR: string;
 		npm_config_noproxy: string;
@@ -143,6 +171,14 @@ declare module '$env/dynamic/private' {
 		npm_package_json: string;
 		npm_config_engine_strict: string;
 		_: string;
+
+		npm_config_init_module: string;
+		npm_config_local_prefix: string;
+		npm_config_node_gyp: string;
+		npm_config_noproxy: string;
+		npm_config_npm_version: string;
+		npm_config_prefix: string;
+
 		npm_config_userconfig: string;
 		npm_config_init_module: string;
 		__CFBundleIdentifier: string;
@@ -165,6 +201,7 @@ declare module '$env/dynamic/private' {
 		LOGNAME: string;
 		npm_lifecycle_script: string;
 		SSH_SOCKET_DIR: string;
+
 		BUN_INSTALL: string;
 		npm_config_user_agent: string;
 		INFOPATH: string;
@@ -174,6 +211,23 @@ declare module '$env/dynamic/private' {
 		npm_config_prefix: string;
 		COLORTERM: string;
 		NODE_ENV: string;
+
+		SystemDrive: string;
+		SystemRoot: string;
+		TEMP: string;
+		TERM_PROGRAM: string;
+		TMP: string;
+		USERDOMAIN: string;
+		USERDOMAIN_ROAMINGPROFILE: string;
+		USERNAME: string;
+		USERPROFILE: string;
+		WARP_HONOR_PS1: string;
+		WARP_IS_LOCAL_SHELL_SESSION: string;
+		WARP_SHELL_DEBUG_MODE: string;
+		WARP_USE_SSH_WRAPPER: string;
+		windir: string;
+		ZES_ENABLE_SYSMAN: string;
+
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}
