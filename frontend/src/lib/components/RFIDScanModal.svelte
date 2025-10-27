@@ -17,6 +17,7 @@
     CommandEmpty,
     CommandItem,
   } from "$lib/components/ui/command/index.js";
+  import { toast } from "svelte-sonner";
 
   const {
     userID,
@@ -126,6 +127,7 @@
         localAnimalData.adoption_status = fd.get("adoption_status");
         localAnimalData.special_needs = fd.get("special_needs");
         localAnimalData.description = fd.get("description");
+        toast.success(`${localAnimalData.name} updated via RFID scan`);
         editing = false;
       }
     } catch (err: any) {
@@ -190,14 +192,14 @@
         }
       }
 
-      alert("Note created successfully");
+      toast.success(`Note added for ${localAnimalData.name}`);
 
       newNoteData = "";
       newNoteType = "General";
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.log("There was an error while creating the note:", error);
-      alert("Failed to create note: " + error.message);
+      toast.error("Failed to create note: " + (error?.message || "Unknown error"));
     }
   }
 
@@ -250,6 +252,7 @@
         const selectedAnimal = animals.find((a) => a.id === selectedAnimalId);
         if (selectedAnimal) {
           localAnimalData = { ...selectedAnimal, rfid_tag: localRfidTag };
+          toast.success(`RFID tag assigned to ${selectedAnimal.name}`);
           // Clear localRfidTag to transition to details view
           localRfidTag = null;
           // Mark that we've made local changes

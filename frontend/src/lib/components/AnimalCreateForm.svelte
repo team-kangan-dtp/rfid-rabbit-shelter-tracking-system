@@ -5,6 +5,8 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import type { Animal, AnimalCreateData } from "$lib/types";
   import { ANIMAL_SPECIES, ADOPTION_STATUSES } from "$lib/types";
+  import { enhance } from "$app/forms";
+  import { toast } from "svelte-sonner";
 
   export let allAnimals: Animal[] = [];
   export let onSubmit: (event: Event) => void = () => {};
@@ -39,6 +41,35 @@
   action="?/create"
   on:submit={onSubmit}
   class="space-y-4"
+  use:enhance={() => {
+    return async ({ result, formData }) => {
+      if (result.type === 'success') {
+        const animalName = formData.get('name') as string;
+        toast.success(`${animalName} has been added to the shelter!`);
+        
+        // Reset form
+        newAnimal = {
+          name: "",
+          species: "Rabbit",
+          breed: "",
+          date_of_birth: "",
+          fur_colour: "",
+          weight_kg: "",
+          arrival_date: new Date().toISOString().split("T")[0],
+          neutered: false,
+          adoption_status: "Available",
+          bonded_with: "",
+          rfid_tag: "",
+          special_needs: "",
+          description: "",
+        };
+        
+        onSubmit(new CustomEvent('submit'));
+      } else if (result.type === 'failure') {
+        toast.error(result.data?.error || 'Failed to create animal');
+      }
+    };
+  }}
 >
   <!-- Name -->
   <AnimalFormField

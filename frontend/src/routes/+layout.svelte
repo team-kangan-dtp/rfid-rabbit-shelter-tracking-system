@@ -11,6 +11,7 @@
   // import app sidebar from componenents/app-sidebar to display
   import MobileBottomTabs from "$lib/components/mobile-bottom-tabs.svelte";
   import RFIDScanModal from "$lib/components/RFIDScanModal.svelte";
+  import { Toaster } from "$lib/components/ui/sonner/index.js";
 
   type LogEvent = {
     [key: string]: any;
@@ -244,3 +245,5 @@
     onClose={closeModal}
   />
 {/if}
+
+<Toaster />

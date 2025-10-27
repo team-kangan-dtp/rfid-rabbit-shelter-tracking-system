@@ -5,9 +5,12 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import type { Animal } from "$lib/types";
   import { ANIMAL_SPECIES, ADOPTION_STATUSES } from "$lib/types";
+  import { enhance } from "$app/forms";
+  import { toast } from "svelte-sonner";
 
   export let animal: Animal;
   export let allAnimals: Animal[] = [];
+  export let onUpdateSuccess: () => void = () => {};
 
   // Create a local copy for editing
   let editingAnimal: Animal = { ...animal };
@@ -24,7 +27,23 @@
   const adoptionStatusOptions = ADOPTION_STATUSES;
 </script>
 
-<form id="edit-animal-form" method="POST" action="?/update" class="flex-1 space-y-4 overflow-y-auto">
+<form 
+  id="edit-animal-form" 
+  method="POST" 
+  action="?/update" 
+  class="flex-1 space-y-4 overflow-y-auto"
+  use:enhance={() => {
+    return async ({ result, formData }) => {
+      if (result.type === 'success') {
+        const animalName = formData.get('name') as string;
+        toast.success(`${animalName} has been updated successfully`);
+        onUpdateSuccess();
+      } else if (result.type === 'failure') {
+        toast.error(result.data?.error || 'Failed to update animal');
+      }
+    };
+  }}
+>
   <input type="hidden" name="id" value={editingAnimal.id} />
   
   <!-- Name -->
